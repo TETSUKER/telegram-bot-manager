@@ -16,7 +16,7 @@ export const parseBody = async (
   req.on('end', async () => {
     if (body) {
       req.body = JSON.parse(body);
-      await next();
+      next();
     }
   });
 };

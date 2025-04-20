@@ -3,6 +3,7 @@ import { diContainer } from 'app/core/di-container';
 import { Request, RequestMethod } from 'app/interfaces/http.interfaces';
 import { Routes } from 'app/interfaces/router.interfaces';
 import { Middleware } from 'app/interfaces/middleware.interfaces';
+import { getFullUrl } from 'app/utils/getFullUrl';
 
 export class Http {
   private httpServer: Server = new Server();
@@ -27,7 +28,7 @@ export class Http {
   }
 
   private async handleRequest(req: Request, res: ServerResponse): Promise<void> {
-    const fullUrl = this.getFullUrl(req);
+    const fullUrl = getFullUrl(req);
     const parsedUrl = new URL(fullUrl);
 
     if (!this.routes[parsedUrl.pathname]) {
@@ -45,7 +46,13 @@ export class Http {
     const route = this.routes[parsedUrl.pathname][req.method as RequestMethod];
 
     if (route?.callback) {
-      await this.runMiddlewareChain(route.middlewares, req, res);
+      try {
+        await this.runMiddlewareChain(route.middlewares, req, res);
+      } catch(err) {
+        res.end(`Error: ${err}`);
+        return;
+      }
+
       return route.callback(req, res);
     } else {
       throw new Error(`Handler for ${req.method} with path: ${parsedUrl.pathname} doesn't exist.`)
@@ -53,22 +60,34 @@ export class Http {
   }
 
   private async runMiddlewareChain(middlewares: Middleware[], req: Request, res: ServerResponse): Promise<void> {
-    const middlewareChain = async (index: number) => {
+    const dispatch = async (index: number): Promise<void> => {
       if (index >= middlewares.length) {
         return;
       }
-      await middlewares[index](req, res, () => middlewareChain(index + 1));
-    }
 
-    await middlewareChain(0);
-  }
+      await new Promise<void>((resolve, reject) => {
+        const next = (err?: any) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve();
+        };
 
-  private getFullUrl(req: Request): string {
-    const protocol = req.headers['x-forwarded-proto'] || 'http';
-    const host = req.headers.host;
-    const path = req.url;
+        try {
+          const result = middlewares[index](req, res, next);
 
-    return `${protocol}://${host}${path}`;
+          if (result instanceof Promise) {
+            result.catch(reject);
+          }
+        } catch(err) {
+          reject(err);
+        }
+      });
+
+      await dispatch(index + 1);
+    };
+
+    await dispatch(0);
   }
 }
 

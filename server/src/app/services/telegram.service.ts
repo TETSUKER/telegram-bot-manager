@@ -1,8 +1,8 @@
 import { diContainer } from 'app/core/di-container';
 import { TelegramHttpsApi } from 'app/core/telegram-https-api';
-import { TelegramUpdate } from 'app/interfaces/telegram.interfaces';
+import { TelegramMessage, TelegramUpdate, TelegramUser } from 'app/interfaces/telegram.interfaces';
 
-export class TelegramUpdatesHandler {
+export class TelegramService {
   private isPolling: boolean = false;
   private pollLoopPromise: Promise<void> | null = null;
   private shouldStop: boolean = false;
@@ -12,20 +12,29 @@ export class TelegramUpdatesHandler {
 
   constructor(private telegramHttpsApi: TelegramHttpsApi) {}
 
+  public async getBotInfo(botToken: string): Promise<TelegramUser> {
+    return await this.telegramHttpsApi.callApi('getMe', botToken);
+  }
+
+  public async sendTextMessage(botToken: string, chatId: number, text: string): Promise<TelegramMessage> {
+    return await this.telegramHttpsApi.callApi('sendMessage', botToken, { chat_id: chatId, text });
+  }
+
+  public async getUpdates(botToken: string, offset: number = 0, timeout: number = 30): Promise<TelegramUpdate[]> {
+    return this.telegramHttpsApi.callApi('getUpdates', botToken, { offset, timeout });
+  }
+
   public startPolling(): void {
     if (this.isPolling) {
-      console.log('Polling is already running');
       return;
     }
 
     this.isPolling = true;
     this.shouldStop = false;
-    console.log('Starting polling...');
 
     this.pollLoopPromise = this.pollUpdates();
 
     this.pollLoopPromise
-      .then(() => console.log('Polling stopped gracefully'))
       .catch(err => console.error('Polling stopped with error:', err))
       .finally(() => {
         this.isPolling = false;
@@ -35,11 +44,9 @@ export class TelegramUpdatesHandler {
 
   public async stopPolling() {
     if (!this.isPolling) {
-      console.log('Polling is not running');
       return;
     }
 
-    console.log('Stopping polling...');
     this.shouldStop = true;
 
     try {
@@ -52,7 +59,7 @@ export class TelegramUpdatesHandler {
   private async pollUpdates(): Promise<void> {
     while(!this.shouldStop) {
       try {
-        const updates = await this.telegramHttpsApi.getUpdates(this.botToken, this.lastUpdateId + 1);
+        const updates = await this.getUpdates(this.botToken, this.lastUpdateId + 1);
         if (Array.isArray(updates) && updates.length > 0) {
           for (const update of updates) {
             this.handleUpdate(update);
@@ -70,7 +77,7 @@ export class TelegramUpdatesHandler {
 
     if (update?.message?.text === 'Да') {
       const chatId = Number(`${this.chatIdPrefix}${process.env.CHAT_ID}`);
-      await this.telegramHttpsApi.sendTextMessage(this.botToken, chatId, 'Нет');
+      await this.sendTextMessage(this.botToken, chatId, 'Нет');
     }
   }
 
@@ -79,4 +86,4 @@ export class TelegramUpdatesHandler {
   }
 }
 
-diContainer.registerDependencies(TelegramUpdatesHandler, [TelegramHttpsApi]);
+diContainer.registerDependencies(TelegramService, [TelegramHttpsApi]);

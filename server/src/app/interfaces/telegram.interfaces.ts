@@ -1,4 +1,4 @@
-export type TelegramApiMethod = 'sendMessage' | 'getUpdates';
+export type TelegramApiMethod = 'sendMessage' | 'getUpdates' | 'getMe';
 
 export type TelegramMessageEntityType =
   'mention' |
@@ -83,4 +83,8 @@ export interface TelegramApiResponse<T> {
   result?: T;
   description?: string;
   error_code?: number;
+}
+
+export interface TelegramBot extends TelegramUser {
+  token: string;
 }

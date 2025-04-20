@@ -1,4 +1,4 @@
-import { RequestCallback, RequestMethod } from 'app/interfaces/http.interfaces';
+import { RequestCallback, RequestMethod, Request } from 'app/interfaces/http.interfaces';
 import { Routes } from 'app/interfaces/router.interfaces';
 import { diContainer } from 'app/core/di-container';
 import { Middleware } from 'app/interfaces/middleware.interfaces';
