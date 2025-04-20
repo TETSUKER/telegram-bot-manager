@@ -8,6 +8,7 @@ export class TelegramUpdatesHandler {
   private shouldStop: boolean = false;
   private lastUpdateId: number = 0;
   private readonly chatIdPrefix = -100;
+  private readonly botToken = process.env.BOT_TOKEN || '';
 
   constructor(private telegramHttpsApi: TelegramHttpsApi) {}
 
@@ -51,8 +52,8 @@ export class TelegramUpdatesHandler {
   private async pollUpdates(): Promise<void> {
     while(!this.shouldStop) {
       try {
-        const updates = await this.telegramHttpsApi.getUpdates(this.lastUpdateId + 1);
-        if (updates.length > 0) {
+        const updates = await this.telegramHttpsApi.getUpdates(this.botToken, this.lastUpdateId + 1);
+        if (Array.isArray(updates) && updates.length > 0) {
           for (const update of updates) {
             this.handleUpdate(update);
           }
@@ -65,12 +66,11 @@ export class TelegramUpdatesHandler {
   }
 
   private async handleUpdate(update: TelegramUpdate): Promise<void> {
-    console.log("New update:", update);
     this.lastUpdateId = update.update_id;
 
     if (update?.message?.text === 'Да') {
       const chatId = Number(`${this.chatIdPrefix}${process.env.CHAT_ID}`);
-      await this.telegramHttpsApi.sendTextMessage(chatId, 'Нет');
+      await this.telegramHttpsApi.sendTextMessage(this.botToken, chatId, 'Нет');
     }
   }
 

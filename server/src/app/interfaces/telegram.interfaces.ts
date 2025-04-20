@@ -1,28 +1,3 @@
-export interface TelegramError extends Error {
-  code?: number;
-  response?: {
-    statusCode: number;
-    body: string;
-  };
-}
-
-export interface TelegramApiResponse {
-  message_id: number;
-  from: {
-    id: number;
-    is_bot: boolean;
-    first_name: string;
-    username: string;
-  };
-  chat: {
-    id: number;
-    title: string;
-    type: string;
-  }
-  date: number;
-  text: string;
-}
-
 export type TelegramApiMethod = 'sendMessage' | 'getUpdates';
 
 export type TelegramMessageEntityType =
@@ -101,4 +76,11 @@ export interface TelegramMessage {
 export interface TelegramUpdate {
   update_id: number;
   message?: TelegramMessage;
+}
+
+export interface TelegramApiResponse<T> {
+  ok: boolean,
+  result?: T;
+  description?: string;
+  error_code?: number;
 }
