@@ -1,7 +1,7 @@
 import { IncomingMessage } from 'http';
 import { request } from 'https';
 import { diContainer } from 'app/core/di-container';
-import { TelegramApiMethod, TelegramApiResponse } from 'app/interfaces/telegram.interfaces';
+import { TelegramApiMethod, TelegramApiResponse } from 'app/interfaces/telegram-api.interfaces';
 
 export class TelegramHttpsApi {
   private readonly apiUrl = 'https://api.telegram.org/bot';

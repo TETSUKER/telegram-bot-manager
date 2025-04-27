@@ -2,10 +2,10 @@ import { IncomingMessage, ServerResponse } from 'http';
 
 export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
-export interface Request extends IncomingMessage {
-  body?: Record<string, unknown>;
+export interface Request<T = any> extends IncomingMessage {
+  body?: T;
   params?: Record<string, string | null>;
   query?: Record<string, string>;
 }
 
-export type RequestCallback = (req: Request, res: ServerResponse) => void;
+export type RequestCallback<T = any> = (req: Request<T>, res: ServerResponse) => void;

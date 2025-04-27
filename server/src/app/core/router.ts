@@ -1,4 +1,4 @@
-import { RequestCallback, RequestMethod, Request } from 'app/interfaces/http.interfaces';
+import { RequestCallback, RequestMethod } from 'app/interfaces/http.interfaces';
 import { Routes } from 'app/interfaces/router.interfaces';
 import { diContainer } from 'app/core/di-container';
 import { Middleware } from 'app/interfaces/middleware.interfaces';
@@ -6,19 +6,19 @@ import { Middleware } from 'app/interfaces/middleware.interfaces';
 export class Router {
   private readonly routes: Routes = {};
 
-  public get(path: string, middlewares: Middleware[], handler: RequestCallback) {
+  public get(path: string, middlewares: Middleware[], handler: RequestCallback<null>) {
     this.addRoute(path, 'GET', middlewares, handler);
   }
 
-  public post(path: string, middlewares: Middleware[], handler: RequestCallback) {
-    this.addRoute(path, 'POST', middlewares, handler);
+  public post<T>(path: string, middlewares: Middleware[], handler: RequestCallback<T>) {
+    this.addRoute<T>(path, 'POST', middlewares, handler);
   }
 
-  private addRoute(
+  private addRoute<T>(
     path: string,
     method: RequestMethod,
     middlewares: Middleware[],
-    handler: RequestCallback,
+    handler: RequestCallback<T>,
   ): void {
     if (!this.routes[path]) {
       this.routes[path] = {};

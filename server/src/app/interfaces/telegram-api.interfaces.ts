@@ -21,14 +21,72 @@ export type TelegramMessageEntityType =
   'text_mention' |
   'custom_emoji';
 
+export interface TelegramPhotoSize {
+  file_id: string;
+  file_unique_id: string;
+  width: number;
+  height: number;
+  file_size?: number;
+}
+
+export interface TelegramAnimation {
+  file_id: string;
+  file_unique_id: string;
+  width: number;
+  height: number;
+  duration: number;
+  thumbnail?: TelegramPhotoSize;
+  file_name?: string;
+  mime_type?: string;
+  file_size?: number;
+}
+
+export interface TelegramDocument {
+  file_id: string;
+  file_unique_id: string;
+  thumbnail?: TelegramPhotoSize;
+  file_name?: string;
+  mime_type?: string;
+  file_size?: number;
+}
+
+export interface TelegramFile {
+  file_id: string;
+  file_unique_id: string;
+  file_size?: number;
+  file_path?: string;
+}
+
+export interface TelegramSticker {
+  file_id: string;
+  file_unique_id: string;
+  type: 'regular' | 'mask' | 'custom_emoji';
+  width: number;
+  height: number;
+  is_animated: boolean;
+  is_video: boolean;
+  thumbnail?: TelegramPhotoSize;
+  emoji?: string;
+  set_name?: string;
+  premium_animation?: TelegramFile;
+  mask_position?: unknown;
+  custom_emoji_id?: string;
+  needs_repainting?: true;
+  file_size?: number;
+}
+
 export interface TelegramMessageEntity {
   type: TelegramMessageEntityType;
   offset: number;
   length: number;
   url?: string;
-  user?: any;
+  user?: TelegramUser;
   language?: string;
   custom_emoji_id?: string;
+  animation?: TelegramAnimation;
+  document?: TelegramDocument;
+  photo?: TelegramPhotoSize[];
+  sticker?: TelegramSticker;
 }
 
 export interface TelegramUser {
@@ -83,8 +141,4 @@ export interface TelegramApiResponse<T> {
   result?: T;
   description?: string;
   error_code?: number;
-}
-
-export interface TelegramBot extends TelegramUser {
-  token: string;
 }

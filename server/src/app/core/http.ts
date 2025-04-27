@@ -4,9 +4,10 @@ import { Request, RequestMethod } from 'app/interfaces/http.interfaces';
 import { Routes } from 'app/interfaces/router.interfaces';
 import { Middleware } from 'app/interfaces/middleware.interfaces';
 import { getFullUrl } from 'app/utils/getFullUrl';
+import { AddressInfo } from 'node:net';
 
 export class Http {
-  private httpServer: Server = new Server();
+  private httpServer: Server;
   private routes: Routes = {};
 
   constructor() {
@@ -14,17 +15,9 @@ export class Http {
   }
 
   private getServer(): Server {
-    return createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    return createServer((req: IncomingMessage, res: ServerResponse) => {
       this.handleRequest(req as Request, res);
     });
-  }
-
-  public listen(port: number, hostname: string, callback: () => void): void {
-    this.httpServer.listen(port, hostname, callback);
-  }
-
-  public setRoutes(routes: Routes): void {
-    this.routes = routes;
   }
 
   private async handleRequest(req: Request, res: ServerResponse): Promise<void> {
@@ -60,7 +53,7 @@ export class Http {
   }
 
   private async runMiddlewareChain(middlewares: Middleware[], req: Request, res: ServerResponse): Promise<void> {
-    const dispatch = async (index: number): Promise<void> => {
+    const dispatch = async (index: number = 0): Promise<void> => {
       if (index >= middlewares.length) {
         return;
       }
@@ -87,7 +80,20 @@ export class Http {
       await dispatch(index + 1);
     };
 
-    await dispatch(0);
+    await dispatch();
+  }
+
+  public listen(port: number, hostname: string, callback: () => void): void {
+    console.log('Starting server...');
+    this.httpServer.listen(port, hostname, () => {
+      callback();
+      const addr = this.httpServer.address() as AddressInfo;
+      console.log(`Server running at http://${addr.address}:${addr.port}`);
+    });
+  }
+
+  public setRoutes(routes: Routes): void {
+    this.routes = routes;
   }
 }
 

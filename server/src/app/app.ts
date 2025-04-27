@@ -16,9 +16,12 @@ export class App {
     this.http.listen(port, 'localhost', () => {
       this.routes.registerRoutes();
       this.http.setRoutes(this.router.getRoutes());
-      console.log(`Http server on PORT: ${port} started`);
     });
   }
 }
 
-diContainer.registerDependencies(App, [Http, Router, Routes]);
+diContainer.registerDependencies(App, [
+  Http,
+  Router,
+  Routes,
+]);

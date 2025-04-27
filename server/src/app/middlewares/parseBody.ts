@@ -7,16 +7,22 @@ export const parseBody = async (
   _: ServerResponse,
   next: NextFunction,
 ) => {
-  let body = '';
+  const hasBody = req.headers['content-length'] !== '0';
 
-  req.on('data', chunk => {
-    body += chunk.toString();
-  });
+  if (hasBody) {
+    let body = '';
 
-  req.on('end', async () => {
-    if (body) {
-      req.body = JSON.parse(body);
-      next();
-    }
-  });
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+  
+    req.on('end', async () => {
+      if (body) {
+        req.body = JSON.parse(body);
+        next();
+      }
+    });
+  } else {
+    next();
+  }
 };
