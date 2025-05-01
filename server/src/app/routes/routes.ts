@@ -1,20 +1,20 @@
 import { diContainer } from 'app/core/di-container';
 import { BotsRoutes } from './bots.routes';
-import { HandlersRoutes } from './handlers.routes';
+import { MessageRulesRoutes } from './message-rules.routes';
 
 export class Routes {
   constructor(
     private telegramRoutes: BotsRoutes,
-    private handlersRoutes: HandlersRoutes,
+    private messageRulesRoutes: MessageRulesRoutes,
   ) {}
 
   public registerRoutes(): void {
     this.telegramRoutes.registerRoutes();
-    this.handlersRoutes.registerRoutes();
+    this.messageRulesRoutes.registerRoutes();
   }
 }
 
 diContainer.registerDependencies(Routes, [
   BotsRoutes,
-  HandlersRoutes,
+  MessageRulesRoutes,
 ]);

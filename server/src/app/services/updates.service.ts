@@ -1,22 +1,22 @@
 import { diContainer } from 'app/core/di-container';
 import { TelegramService } from './telegram.service';
 import { BotModel } from 'app/models/bot.model';
-import { HandlersModel } from 'app/models/handlers.model';
+import { MessageRulesModel } from 'app/models/message-rules.model';
 import { Bot } from 'app/interfaces/bot-model.interfaces';
-import { Handler } from 'app/interfaces/handlers-model.interfaces';
+import { MessageResponse, MessageCondition, MessageRule } from 'app/interfaces/message-rules-model.interfaces';
 import { TelegramUpdate } from 'app/interfaces/telegram-api.interfaces';
 
 export class UpdatesService {
   private bots: Bot[] = [];
-  private handlers: Handler[] = [];
+  private messageRules: MessageRule[] = [];
 
   constructor(
     private telegramService: TelegramService,
     private botModel: BotModel,
-    private handlersModel: HandlersModel,
+    private handlersModel: MessageRulesModel,
   ) {
     this.updateCachedBots();
-    this.updateCachedHandlers();
+    this.updateCachedMessageRules();
   }
 
   public updateCachedBots(): void {
@@ -28,8 +28,8 @@ export class UpdatesService {
     }
   }
 
-  public updateCachedHandlers(): void {
-    this.handlers = this.handlersModel.getAllHandlers();
+  public updateCachedMessageRules(): void {
+    this.messageRules = this.handlersModel.getAllMessageRules();
   }
 
   private async pollBotUpdates(botId: number): Promise<void> {
@@ -57,15 +57,31 @@ export class UpdatesService {
   }
 
   private async handleUpdate(update: TelegramUpdate, bot: Bot): Promise<void> {
-    this.botModel.updateBot({...bot, lastUpdateId: update.update_id});
-    const handlers = this.handlers.filter(handler => bot.handlerIds.includes(handler.id));
+    const messageRules = this.messageRules.filter(handler => bot.handlerIds.includes(handler.id));
     const message = update.message?.text;
-    console.info(`${bot.username} message: ${message}`);
-    for (const handler of handlers) {
-      if (handler.reply?.message === message && handler.reply?.text) {
-        const chatId = Number(update.message?.chat.id);
-        await this.telegramService.sendTextMessage(bot.token, chatId, handler.reply.text);
+
+    if (message && messageRules.length) {
+      for (const rule of messageRules) {
+        if (this.isMessageMatchRule(rule.condition, message)) {
+          await this.sendMessageResponse(rule.response, update, bot);
+        }
       }
+    }
+
+    this.botModel.updateBot({...bot, lastUpdateId: update.update_id});
+  }
+
+  private isMessageMatchRule(messageCondition: MessageCondition, message: string): boolean {
+    if (messageCondition.type === 'regex') {
+      return new RegExp(messageCondition.pattern).test(message);
+    }
+    return false;
+  }
+
+  private async sendMessageResponse(response: MessageResponse, update: TelegramUpdate, bot: Bot): Promise<void> {
+    if (response.type === 'message') {
+      const chatId = Number(update.message?.chat.id);
+      await this.telegramService.sendTextMessage(bot.token, chatId, response.text, response.reply ? update.message?.message_id : null);
     }
   }
 
@@ -75,12 +91,12 @@ export class UpdatesService {
 
   public updateHandlers(): void {
     console.log('updateHandlers');
-    this.handlers = this.handlersModel.getBotHandlers();
+    this.messageRules = this.handlersModel.getMessageRules();
   }
 }
 
 diContainer.registerDependencies(UpdatesService, [
   TelegramService,
   BotModel,
-  HandlersModel,
+  MessageRulesModel,
 ]);
