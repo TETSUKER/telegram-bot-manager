@@ -12,20 +12,20 @@ export class BotsRoutes {
   ) {}
 
   public registerRoutes(): void {
-    this.router.post<{ token: string }>('/addBot', [writeHeadJson, parseBody], (req, res) => {
-      this.botsController.addBot(req, res);
+    this.router.post<{ token: string }>('/addBot', [writeHeadJson, parseBody], async (req, res) => {
+      await this.botsController.addBot(req, res);
     });
 
-    this.router.post<{ botId: number }>('/removeBot', [writeHeadJson, parseBody], (req, res) => {
-      this.botsController.removeBot(req, res);
+    this.router.post<{ botId: number }>('/removeBot', [writeHeadJson, parseBody], async (req, res) => {
+      await this.botsController.removeBot(req, res);
     });
 
     this.router.get('/getBotInfo', [parseParams, writeHeadJson], async (req, res) => {
-      this.botsController.getBotInfo(req, res);
+      await this.botsController.getBotInfo(req, res);
     });
 
     this.router.get('/getAllBots', [parseParams, writeHeadJson], async (req, res) => {
-      this.botsController.getAllBots(req, res);
+      await this.botsController.getAllBots(req, res);
     });
   }
 }

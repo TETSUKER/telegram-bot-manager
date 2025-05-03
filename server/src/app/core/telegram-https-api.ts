@@ -13,35 +13,26 @@ export class TelegramHttpsApi {
   };
 
   public async callApi<T>(method: TelegramApiMethod, botToken: string, body: object = {}): Promise<T> {
-    return new Promise((resolve, reject) => {
-      this.checkForEmptyToken(botToken, reject);
-      this.sendBotRequest(method, botToken, body, resolve, reject);
-    });
-  }
-
-  private checkForEmptyToken(botToken: string, reject: (text: string) => void): Promise<Error> | void {
-    if (!botToken.length) {
-      reject(`Empty bot token`);
-    }
+    return await this.sendBotRequest(method, botToken, body);
   }
 
   private sendBotRequest<T>(
     method: TelegramApiMethod,
     botToken: string,
     body: object = {},
-    resolve: (value: T | PromiseLike<T>) => void,
-    reject: (text: string) => void,
-  ): void {
-    const url = `${this.apiUrl}${botToken}/${method}`;
-    const req = request(
-      url,
-      this.options,
-      (res: IncomingMessage) => this.handleApiResponse(res, resolve, reject)
-    );
-
-    req.on('error', reject);
-    req.write(JSON.stringify(body));
-    req.end();
+  ): Promise<T> {
+    return new Promise((resolve, reject) => {
+      const url = `${this.apiUrl}${botToken}/${method}`;
+      const req = request(
+        url,
+        this.options,
+        (res: IncomingMessage) => this.handleApiResponse(res, resolve, reject)
+      );
+  
+      req.on('error', reject);
+      req.write(JSON.stringify(body));
+      req.end();
+    });
   }
 
   private handleApiResponse<T>(

@@ -8,4 +8,4 @@ export interface Request<T = any> extends IncomingMessage {
   query?: Record<string, string>;
 }
 
-export type RequestCallback<T = any> = (req: Request<T>, res: ServerResponse) => void;
+export type RequestCallback<T = any> = (req: Request<T>, res: ServerResponse) => Promise<void>;

@@ -5,6 +5,7 @@ import { Routes } from 'app/interfaces/router.interfaces';
 import { Middleware } from 'app/interfaces/middleware.interfaces';
 import { getFullUrl } from 'app/utils/getFullUrl';
 import { AddressInfo } from 'node:net';
+import { ApiError } from 'app/errors/api.error';
 
 export class Http {
   private httpServer: Server;
@@ -46,10 +47,25 @@ export class Http {
         return;
       }
 
-      return route.callback(req, res);
+      try {
+        await route.callback(req, res);
+      } catch(err) {
+        this.handleError(err as ApiError, res);
+      }
     } else {
       throw new Error(`Handler for ${req.method} with path: ${parsedUrl.pathname} doesn't exist.`)
     }
+  }
+
+  private handleError(err: ApiError, res: ServerResponse): void {
+    res.statusCode = err.statusCode;
+    res.end(JSON.stringify({
+      error: {
+        message: err.message,
+        details: err.details,
+        timestamp: err.timestamp,
+      }
+    }));
   }
 
   private async runMiddlewareChain(middlewares: Middleware[], req: Request, res: ServerResponse): Promise<void> {

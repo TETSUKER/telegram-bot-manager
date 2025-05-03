@@ -1,12 +1,17 @@
 import { diContainer } from 'app/core/di-container';
 import { TelegramHttpsApi } from 'app/core/telegram-https-api';
+import { ExternalApiError } from 'app/errors/external-api.error';
 import { TelegramMessage, TelegramUpdate, TelegramUser } from 'app/interfaces/telegram-api.interfaces';
 
 export class TelegramService {
   constructor(private telegramHttpsApi: TelegramHttpsApi) {}
 
   public async getBotInfo(botToken: string): Promise<TelegramUser> {
-    return await this.telegramHttpsApi.callApi('getMe', botToken);
+    try {
+      return await this.telegramHttpsApi.callApi('getMe', botToken);
+    } catch(err) {
+      throw new ExternalApiError(`Error when get bot: ${err}`);
+    }
   }
 
   public async sendTextMessage(botToken: string, chatId: number, text: string, reply_to_message_id?: number | null): Promise<TelegramMessage> {

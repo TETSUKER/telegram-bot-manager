@@ -7,6 +7,6 @@ export const writeHeadJson = async (
   res: ServerResponse,
   next: NextFunction,
 ) => {
-  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.setHeader('Content-Type', 'application/json');
   next();
 };

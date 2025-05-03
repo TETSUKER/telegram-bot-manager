@@ -11,15 +11,15 @@ export class MessageRulesRoutes {
   ) {}
 
   public registerRoutes(): void {
-    this.router.post('/addMessageRule', [writeHeadJson, parseBody], (req, res) => {
+    this.router.post('/addMessageRule', [writeHeadJson, parseBody], async (req, res) => {
       this.messageRulesController.addMessageRule(req, res);
     });
 
-    this.router.get('/getAllMessageRules', [writeHeadJson], (req, res) => {
+    this.router.get('/getAllMessageRules', [writeHeadJson], async (req, res) => {
       this.messageRulesController.getAllMessageRules(req, res);
     });
 
-    this.router.post<{ messageRuleId: number }>('/removeMessageRule', [writeHeadJson, parseBody], (req, res) => {
+    this.router.post<{ messageRuleId: number }>('/removeMessageRule', [writeHeadJson, parseBody], async (req, res) => {
       this.messageRulesController.removeMessageRule(req, res);
     });
   }

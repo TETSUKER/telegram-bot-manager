@@ -19,8 +19,8 @@ export class UpdatesService {
     this.updateCachedMessageRules();
   }
 
-  public updateCachedBots(): void {
-    const dbBots = this.botModel.getBots();
+  public async updateCachedBots(): Promise<void> {
+    const dbBots = await this.botModel.getBots();
     const newBots = dbBots.filter(dbBot => !this.bots.map(bot => bot.id).includes(dbBot.id));
     this.bots = dbBots;
     for (const newBot of newBots) {
@@ -46,7 +46,7 @@ export class UpdatesService {
         this.updateCachedBots();
         bot = this.getBotById(botId);
       } catch(err) {
-        console.error('Error:', err);
+        console.error('UpdatesService error:', err);
         await this.delay(5000);
       }
     }
