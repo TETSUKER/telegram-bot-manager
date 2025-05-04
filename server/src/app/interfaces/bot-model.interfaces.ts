@@ -5,6 +5,6 @@ export interface NewBot {
 
 export interface Bot extends NewBot {
   id: number;
-  handlerIds: number[];
+  ruleIds: number[];
   lastUpdateId: number;
 }

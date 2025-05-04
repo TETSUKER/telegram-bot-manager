@@ -20,7 +20,7 @@ export class UpdatesService {
   }
 
   public async updateCachedBots(): Promise<void> {
-    const dbBots = await this.botModel.getBots();
+    const dbBots = await this.botModel.getAllBots();
     const newBots = dbBots.filter(dbBot => !this.bots.map(bot => bot.id).includes(dbBot.id));
     this.bots = dbBots;
     for (const newBot of newBots) {
@@ -57,7 +57,7 @@ export class UpdatesService {
   }
 
   private async handleUpdate(update: TelegramUpdate, bot: Bot): Promise<void> {
-    const messageRules = this.messageRules.filter(handler => bot.handlerIds.includes(handler.id));
+    const messageRules = this.messageRules.filter(handler => bot.ruleIds.includes(handler.id));
     const message = update.message?.text;
 
     if (message && messageRules.length) {

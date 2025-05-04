@@ -15,25 +15,25 @@ export class BotsService {
   public async addBot(token: string): Promise<void> {
     try {
       const botInfo = await this.telegramService.getBotInfo(token);
-      this.botModel.addBot({
+      await this.botModel.addBot({
         token,
         username: botInfo.username || '',
       });
-      this.updatesService.updateCachedBots();
+      await this.updatesService.updateCachedBots();
     } catch(err) {
       throw err;
     }
   }
 
-  public async getBots(): Promise<Bot[]> {
+  public async getAllBots(): Promise<Bot[]> {
     try {
-      return await this.botModel.getBots();
+      return await this.botModel.getAllBots();
     } catch(err) {
       throw err;
     }
   }
 
-  public async getBot(botId: number): Promise<Bot> {
+  public async getBotById(botId: number): Promise<Bot> {
     try {
       return await this.botModel.getBot(botId);
     } catch(err) {
@@ -44,7 +44,7 @@ export class BotsService {
   public async removeBot(botId: number): Promise<void> {
     try {
       await this.botModel.removeBot(botId);
-      this.updatesService.updateCachedBots();
+      await this.updatesService.updateCachedBots();
     } catch(err) {
       throw err;
     }
@@ -53,7 +53,7 @@ export class BotsService {
   public async updateBot(bot: Bot): Promise<void> {
     try {
       await this.botModel.updateBot(bot);
-      this.updatesService.updateCachedBots();
+      await this.updatesService.updateCachedBots();
     } catch(err) {
       throw err;
     }
