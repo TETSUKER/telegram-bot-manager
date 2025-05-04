@@ -5,8 +5,7 @@ export type MessageCondition =
 
 export type MessageResponse =
   | { type: 'message', text: string, reply: boolean }
-  | { type: 'sticker', stickerId: number }
-  | { type: 'gif', gifId: number }
+  | { type: 'sticker', stickerId: string, reply: boolean }
   | { type: 'emoji', emoji: string }
 
 export interface NewMessageRule {

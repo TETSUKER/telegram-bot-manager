@@ -27,11 +27,8 @@ const MessageResponseSchema: ZodType<MessageResponse> = z.union([
   }),
   z.object({
     type: z.literal('sticker'),
-    stickerId: z.number().min(1).max(100),
-  }),
-  z.object({
-    type: z.literal('gif'),
-    gifId: z.number().min(1).max(100),
+    stickerId: z.string().min(1).max(100),
+    reply: z.boolean()
   }),
   z.object({
     type: z.literal('emoji'),

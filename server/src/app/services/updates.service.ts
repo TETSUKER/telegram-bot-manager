@@ -43,7 +43,7 @@ export class UpdatesService {
             await this.handleUpdate(update, bot);
           }
         }
-        this.updateCachedBots();
+        await this.updateCachedBots();
         bot = this.getBotById(botId);
       } catch(err) {
         console.error('UpdatesService error:', err);
@@ -75,13 +75,37 @@ export class UpdatesService {
     if (messageCondition.type === 'regex') {
       return new RegExp(messageCondition.pattern).test(message);
     }
+
+    if (messageCondition.type === 'length') {
+      switch(messageCondition.operator) {
+        case '<': return message.length < messageCondition.value;
+        case '>': return message.length > messageCondition.value;
+        case '>=': return message.length >= messageCondition.value;
+        case '<=': return message.length <= messageCondition.value;
+        case '=': return message.length === messageCondition.value;
+      }
+    }
+
+    if (messageCondition.type === 'command') {
+      return message.match(/^\/[a-z]*/)?.[0] === messageCondition.name;
+    }
+
     return false;
   }
 
   private async sendMessageResponse(response: MessageResponse, update: TelegramUpdate, bot: Bot): Promise<void> {
+    const chatId = Number(update.message?.chat.id);
+
     if (response.type === 'message') {
-      const chatId = Number(update.message?.chat.id);
-      await this.telegramService.sendTextMessage(bot.token, chatId, response.text, response.reply ? update.message?.message_id : null);
+      await this.telegramService.sendTextMessage(bot.token, chatId, response.text, response.reply ? update.message?.message_id : undefined);
+    }
+
+    if (response.type === 'sticker') {
+      await this.telegramService.sendSticker(bot.token, chatId, response.stickerId, response.reply ? update.message?.message_id : undefined);
+    }
+
+    if (response.type === 'emoji' && update.message?.message_id) {
+      await this.telegramService.setMessageReaction(bot.token, chatId, update.message.message_id, response.emoji);
     }
   }
 

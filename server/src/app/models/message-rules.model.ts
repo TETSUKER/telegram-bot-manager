@@ -10,7 +10,7 @@ export class MessageRulesModel {
       id: 0,
       name: 'Message 1',
       condition: { type: 'regex', pattern: '^Да$' },
-      response: { type: 'message', text: 'Нет', reply: false },
+      response: { type: 'emoji', emoji: '👍' },
     },
     {
       id: 1,
@@ -18,6 +18,16 @@ export class MessageRulesModel {
       condition: { type: 'regex', pattern: '^Нет$' },
       response: { type: 'message', text: 'Да', reply: false },
     },
+    {
+      id: 2,
+      name: 'Sticker',
+      condition: { type: 'regex', pattern: '^Каеф$' },
+      response: {
+        type: 'sticker',
+        stickerId: 'CAACAgIAAyEFAASc524zAAP3aBcw-uOT5tsFj3MX-uKEoK6je24AAiJaAAIrBAlJKlxMKkER0TI2BA',
+        reply: true,
+      },
+    }
   ];
 
   public async addMessageRule(newMessageRule: NewMessageRule): Promise<void> {

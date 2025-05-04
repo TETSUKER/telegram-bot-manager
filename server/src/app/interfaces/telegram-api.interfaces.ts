@@ -1,4 +1,9 @@
-export type TelegramApiMethod = 'sendMessage' | 'getUpdates' | 'getMe';
+export type TelegramApiMethod =
+  | 'sendMessage'
+  | 'getUpdates'
+  | 'getMe'
+  | 'sendSticker'
+  | 'setMessageReaction'
 
 export type TelegramMessageEntityType =
   'mention' |
@@ -141,4 +146,30 @@ export interface TelegramApiResponse<T> {
   result?: T;
   description?: string;
   error_code?: number;
+}
+
+export interface SendTextMessageRequestBody {
+  chat_id: number;
+  text: string;
+  reply_to_message_id?: number;
+}
+
+export interface SendStickerRequestBody {
+  chat_id: number;
+  sticker: string;
+  reply_to_message_id?: number;
+}
+
+export interface SetMessageReactionRequestBody {
+  chat_id: number,
+  message_id: number,
+  reaction: {
+    type: 'emoji',
+    emoji: string
+  }[],
+}
+
+export interface GetUpdatesRequestBody {
+  offset: number;
+  timeout: number;
 }
