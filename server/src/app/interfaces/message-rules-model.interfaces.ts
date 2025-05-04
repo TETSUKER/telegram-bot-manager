@@ -9,17 +9,11 @@ export type MessageResponse =
   | { type: 'gif', gifId: number }
   | { type: 'emoji', emoji: string }
 
-type Enumerate<N extends number, Acc extends number[] = []> = Acc['length'] extends N
-  ? Acc[number]
-  : Enumerate<N, [...Acc, Acc['length']]>
-
-type IntRange<F extends number, T extends number> = Exclude<Enumerate<T>, Enumerate<F>>
-
 export interface NewMessageRule {
   name: string;
   condition: MessageCondition;
   response: MessageResponse;
-  probability?: IntRange<0, 101>;
+  probability?: number;
 }
 
 export interface MessageRule extends NewMessageRule {

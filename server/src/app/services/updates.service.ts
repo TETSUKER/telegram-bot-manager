@@ -28,8 +28,8 @@ export class UpdatesService {
     }
   }
 
-  public updateCachedMessageRules(): void {
-    this.messageRules = this.handlersModel.getAllMessageRules();
+  public async updateCachedMessageRules(): Promise<void> {
+    this.messageRules = await this.handlersModel.getAllMessageRules();
   }
 
   private async pollBotUpdates(botId: number): Promise<void> {
@@ -87,11 +87,6 @@ export class UpdatesService {
 
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  public updateHandlers(): void {
-    console.log('updateHandlers');
-    this.messageRules = this.handlersModel.getMessageRules();
   }
 }
 

@@ -1,39 +1,63 @@
 import { ServerResponse } from 'http';
 import { diContainer } from 'app/core/di-container';
 import { Request } from 'app/interfaces/http.interfaces';
-import { NewMessageRule } from 'app/interfaces/message-rules-model.interfaces';
+import { MessageRule, NewMessageRule } from 'app/interfaces/message-rules-model.interfaces';
 import { MessageRulesService } from 'app/services/message-rules.service';
 
 export class MessageRulesController {
   constructor(private messageRulesService: MessageRulesService) {}
 
-  public addMessageRule(request: Request, response: ServerResponse): void {
-    if (request.body as NewMessageRule) {
-      const newMessageRule = request.body as NewMessageRule;
-      this.messageRulesService.addMessageRule(newMessageRule);
-      response.end('MessageRule added');
-    } else {
-      response.end('Provide body');
+  public async addMessageRule(request: Request<NewMessageRule>, response: ServerResponse): Promise<void> {
+    if (request.body) {
+      try {
+        this.messageRulesService.addMessageRule(request.body);
+        response.end('MessageRule added');
+      } catch(err) {
+        throw err;
+      }
     }
   }
 
-  public getAllMessageRules(request: Request, response: ServerResponse): void {
+  public async getAllMessageRules(_: Request, response: ServerResponse): Promise<void> {
     try {
-      const messageRules = this.messageRulesService.getAllMessageRules();
+      const messageRules = await this.messageRulesService.getAllMessageRules();
       response.end(JSON.stringify(messageRules));
     } catch(err) {
-      response.end('Error get rules');
+      throw err;
     }
   }
 
-  public removeMessageRule(request: Request<{ messageRuleId: number }>, response: ServerResponse): void {
-    try {
-      const ruleId = request.body?.messageRuleId as number;
-      this.messageRulesService.removeMessageRule(ruleId);
-      response.end('Bot successfully removed');
-    } catch(err) {
-      console.error(err);
-      response.end('Unknown error while removing MessageRule');
+  public async getMessageRuleById(request: Request<{ id: number }>, response: ServerResponse): Promise<void> {
+    if (request.body) {
+      try {
+        const messageRule = await this.messageRulesService.getMessageRuleById(request.body.id);
+        response.end(JSON.stringify(messageRule));
+      } catch(err) {
+        throw err;
+      }
+    }
+  }
+
+  public async removeMessageRule(request: Request<{ id: number }>, response: ServerResponse): Promise<void> {
+    if (request.body) {
+      try {
+        const ruleId = request.body.id;
+        await this.messageRulesService.removeMessageRule(ruleId);
+        response.end('Message rule successfully removed');
+      } catch(err) {
+        throw err;
+      }
+    }
+  }
+
+  public async updateMessageRule(request: Request<MessageRule>, response: ServerResponse): Promise<void> {
+    if (request.body) {
+      try {
+        await this.messageRulesService.updateMessageRule(request.body);
+        response.end('Message rule seccessfully updated');
+      } catch(err) {
+        throw err;
+      }
     }
   }
 }

@@ -1,6 +1,7 @@
-import { z } from 'zod';
+import { z, ZodType } from 'zod';
+import { NewMessageRule, MessageCondition, MessageResponse, MessageRule } from 'app/interfaces/message-rules-model.interfaces';
 
-const MessageConditionSchema = z.union([
+const MessageConditionSchema: ZodType<MessageCondition> = z.union([
   z.object({
     type: z.literal("regex"),
     pattern: z.string().min(1, "Паттерн не может быть пустым"),
@@ -18,14 +19,14 @@ const MessageConditionSchema = z.union([
   }),
 ]);
 
-const MessageResponseSchema = z.union([
+const MessageResponseSchema: ZodType<MessageResponse> = z.union([
   z.object({
     type: z.literal('message'),
     text: z.string().min(1, 'Need text'),
     reply: z.boolean(),
   }),
   z.object({
-    type: z.literal('length'),
+    type: z.literal('sticker'),
     stickerId: z.number().min(1).max(100),
   }),
   z.object({
@@ -38,9 +39,13 @@ const MessageResponseSchema = z.union([
   })
 ]);
 
-export const MessageRuleSchema = z.object({
+export const NewMessageRuleSchema = z.object({
   name: z.string().min(3).max(30),
   condition: MessageConditionSchema,
   response: MessageResponseSchema,
-  probability: z.number().min(0).max(100),
-});
+  probability: z.number().min(0).max(100).optional(),
+}) satisfies ZodType<NewMessageRule>;
+
+export const MessageRuleSchema = NewMessageRuleSchema.extend({
+  id: z.number()
+}) satisfies ZodType<MessageRule>;

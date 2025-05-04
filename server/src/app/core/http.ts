@@ -42,12 +42,6 @@ export class Http {
     if (route?.callback) {
       try {
         await this.runMiddlewareChain(route.middlewares, req, res);
-      } catch(err) {
-        res.end(`Error: ${err}`);
-        return;
-      }
-
-      try {
         await route.callback(req, res);
       } catch(err) {
         this.handleError(err as ApiError, res);
