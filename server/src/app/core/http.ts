@@ -69,7 +69,7 @@ export class Http {
       }
 
       await new Promise<void>((resolve, reject) => {
-        const next = (err?: any) => {
+        const next = (err?: unknown) => {
           if (err) {
             return reject(err);
           }

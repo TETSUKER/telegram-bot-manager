@@ -13,59 +13,35 @@ export class BotsService {
   ) {}
 
   public async addBot(token: string): Promise<void> {
-    try {
-      const botInfo = await this.telegramService.getBotInfo(token);
-      await this.botModel.addBot({
-        token,
-        username: botInfo.username || '',
-      });
-      await this.updatesService.updateCachedBots();
-    } catch(err) {
-      throw err;
-    }
+    const botInfo = await this.telegramService.getBotInfo(token);
+    await this.botModel.addBot({
+      token,
+      username: botInfo.username || '',
+    });
+    await this.updatesService.updateCachedBots();
   }
 
   public async getAllBots(): Promise<Bot[]> {
-    try {
-      return await this.botModel.getAllBots();
-    } catch(err) {
-      throw err;
-    }
+    return await this.botModel.getAllBots();
   }
 
   public async getBotById(botId: number): Promise<Bot> {
-    try {
-      return await this.botModel.getBot(botId);
-    } catch(err) {
-      throw err;
-    }
+    return await this.botModel.getBot(botId);
   }
 
   public async removeBot(botId: number): Promise<void> {
-    try {
-      await this.botModel.removeBot(botId);
-      await this.updatesService.updateCachedBots();
-    } catch(err) {
-      throw err;
-    }
+    await this.botModel.removeBot(botId);
+    await this.updatesService.updateCachedBots();
   }
 
   public async updateBot(bot: Bot): Promise<void> {
-    try {
-      await this.botModel.updateBot(bot);
-      await this.updatesService.updateCachedBots();
-    } catch(err) {
-      throw err;
-    }
+    await this.botModel.updateBot(bot);
+    await this.updatesService.updateCachedBots();
   }
 
   public async getBotInfo(botId: number): Promise<TelegramUser> {
-    try {
-      const bot = await this.botModel.getBot(botId);
-      return await this.telegramService.getBotInfo(bot.token);
-    } catch(err) {
-      throw err;
-    }
+    const bot = await this.botModel.getBot(botId);
+    return await this.telegramService.getBotInfo(bot.token);
   }
 }
 

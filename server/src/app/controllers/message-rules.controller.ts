@@ -9,55 +9,35 @@ export class MessageRulesController {
 
   public async addMessageRule(request: Request<NewMessageRule>, response: ServerResponse): Promise<void> {
     if (request.body) {
-      try {
-        this.messageRulesService.addMessageRule(request.body);
-        response.end('MessageRule added');
-      } catch(err) {
-        throw err;
-      }
+      this.messageRulesService.addMessageRule(request.body);
+      response.end('MessageRule added');
     }
   }
 
   public async getAllMessageRules(_: Request, response: ServerResponse): Promise<void> {
-    try {
-      const messageRules = await this.messageRulesService.getAllMessageRules();
-      response.end(JSON.stringify(messageRules));
-    } catch(err) {
-      throw err;
-    }
+    const messageRules = await this.messageRulesService.getAllMessageRules();
+    response.end(JSON.stringify(messageRules));
   }
 
   public async getMessageRuleById(request: Request<{ id: number }>, response: ServerResponse): Promise<void> {
     if (request.body) {
-      try {
-        const messageRule = await this.messageRulesService.getMessageRuleById(request.body.id);
-        response.end(JSON.stringify(messageRule));
-      } catch(err) {
-        throw err;
-      }
+      const messageRule = await this.messageRulesService.getMessageRuleById(request.body.id);
+      response.end(JSON.stringify(messageRule));
     }
   }
 
   public async removeMessageRule(request: Request<{ id: number }>, response: ServerResponse): Promise<void> {
     if (request.body) {
-      try {
-        const ruleId = request.body.id;
-        await this.messageRulesService.removeMessageRule(ruleId);
-        response.end('Message rule successfully removed');
-      } catch(err) {
-        throw err;
-      }
+      const ruleId = request.body.id;
+      await this.messageRulesService.removeMessageRule(ruleId);
+      response.end('Message rule successfully removed');
     }
   }
 
   public async updateMessageRule(request: Request<MessageRule>, response: ServerResponse): Promise<void> {
     if (request.body) {
-      try {
-        await this.messageRulesService.updateMessageRule(request.body);
-        response.end('Message rule seccessfully updated');
-      } catch(err) {
-        throw err;
-      }
+      await this.messageRulesService.updateMessageRule(request.body);
+      response.end('Message rule seccessfully updated');
     }
   }
 }
