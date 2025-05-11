@@ -1,7 +1,7 @@
 import { z, ZodType } from 'zod';
-import { NewMessageRule, MessageCondition, MessageResponse, MessageRule } from 'app/interfaces/rule.interfaces';
+import { NewRule, RuleCondition, RuleResponse, Rule, FilterRuleApi } from 'app/interfaces/rule.interfaces';
 
-const MessageConditionSchema: ZodType<MessageCondition> = z.union([
+const MessageConditionSchema: ZodType<RuleCondition> = z.union([
   z.object({
     type: z.literal("regex"),
     pattern: z.string().min(1, "Паттерн не может быть пустым"),
@@ -19,7 +19,7 @@ const MessageConditionSchema: ZodType<MessageCondition> = z.union([
   }),
 ]);
 
-const MessageResponseSchema: ZodType<MessageResponse> = z.union([
+const MessageResponseSchema: ZodType<RuleResponse> = z.union([
   z.object({
     type: z.literal('message'),
     text: z.string().min(1, 'Need text'),
@@ -36,13 +36,20 @@ const MessageResponseSchema: ZodType<MessageResponse> = z.union([
   })
 ]);
 
-export const NewMessageRuleSchema = z.object({
+export const NewRuleSchema = z.object({
   name: z.string().min(3).max(30),
   condition: MessageConditionSchema,
   response: MessageResponseSchema,
   probability: z.number().min(0).max(100).nullable(),
-}) satisfies ZodType<NewMessageRule>;
+}) satisfies ZodType<NewRule>;
 
-export const MessageRuleSchema = NewMessageRuleSchema.extend({
+export const RuleSchema = NewRuleSchema.extend({
   id: z.number()
-}) satisfies ZodType<MessageRule>;
+}) satisfies ZodType<Rule>;
+
+export const FilterRuleSchema = z.object({
+  id: z.number().optional(),
+  name: z.string().optional(),
+  conditionType: z.enum(["regex", "length", "command"]).optional(),
+  responseType: z.enum(["message", "sticker", "emoji"]).optional(),
+}) satisfies ZodType<FilterRuleApi>;

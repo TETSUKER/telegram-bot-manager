@@ -1,7 +1,7 @@
 import { diContainer } from 'app/core/di-container';
 import { TelegramService } from './telegram.service';
 import { RulesModel } from 'app/models/rules.model';
-import { MessageResponse, MessageCondition, MessageRule } from 'app/interfaces/rule.interfaces';
+import { RuleResponse, RuleCondition, Rule } from 'app/interfaces/rule.interfaces';
 import { TelegramUpdate } from 'app/interfaces/telegram-api.interfaces';
 import { GetBotApi } from 'app/interfaces/bot.interfaces';
 import { BotModel } from 'app/models/bot.model';
@@ -9,7 +9,7 @@ import { Logger } from 'app/core/logger';
 
 export class UpdatesService {
   private cachedBots: GetBotApi[] = [];
-  private messageRules: MessageRule[] = [];
+  private messageRules: Rule[] = [];
 
   constructor(
     private telegramService: TelegramService,
@@ -31,7 +31,7 @@ export class UpdatesService {
   }
 
   public async updateCachedMessageRules(): Promise<void> {
-    this.messageRules = await this.rulesModel.getAllMessageRules();
+    this.messageRules = await this.rulesModel.getRules({});
   }
 
   private async pollBotUpdates(botId: number): Promise<void> {
@@ -76,7 +76,7 @@ export class UpdatesService {
     await this.updateCachedBots();
   }
 
-  private isMessageMatchRule(messageCondition: MessageCondition, message: string): boolean {
+  private isMessageMatchRule(messageCondition: RuleCondition, message: string): boolean {
     if (messageCondition.type === 'regex') {
       return new RegExp(messageCondition.pattern).test(message);
     }
@@ -98,7 +98,7 @@ export class UpdatesService {
     return false;
   }
 
-  private async sendMessageResponse(response: MessageResponse, update: TelegramUpdate, bot: GetBotApi): Promise<void> {
+  private async sendMessageResponse(response: RuleResponse, update: TelegramUpdate, bot: GetBotApi): Promise<void> {
     const chatId = Number(update.message?.chat.id);
 
     if (response.type === 'message') {

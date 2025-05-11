@@ -1,24 +1,31 @@
 export type MessageLengthOperator = '>' | '<' | '>=' | '<=' | '=';
 
-export type MessageCondition =
+export type RuleCondition =
   | { type: 'regex', pattern: string }
   | { type: 'length', operator: MessageLengthOperator, value: number }
   | { type: 'command', name: string }
 
-export type MessageResponse =
+export type RuleResponse =
   | { type: 'message', text: string, reply: boolean }
   | { type: 'sticker', stickerId: string, reply: boolean }
   | { type: 'emoji', emoji: string }
 
-export interface NewMessageRule {
+export interface NewRule {
   name: string;
-  condition: MessageCondition;
-  response: MessageResponse;
+  condition: RuleCondition;
+  response: RuleResponse;
   probability: number | null;
 }
 
-export interface MessageRule extends NewMessageRule {
+export interface Rule extends NewRule {
   id: number;
+}
+
+export interface FilterRuleApi {
+  id?: number;
+  name?: string;
+  conditionType?: 'regex' | 'length' | 'command';
+  responseType?: 'message' | 'sticker' | 'emoji';
 }
 
 interface RegexConditionDbRule {

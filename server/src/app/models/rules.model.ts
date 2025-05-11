@@ -3,16 +3,17 @@ import { Postgres } from 'app/core/postgres';
 import { ConflictError } from 'app/errors/conflict.error';
 import { NotFoundError } from 'app/errors/not-found.error';
 import { ServerApiError } from 'app/errors/server.error';
-import { Column } from 'app/interfaces/postgres.interfaces';
+import { Column, Condition } from 'app/interfaces/postgres.interfaces';
 import {
   ConditionDbRule,
   CreateDbRuleTable,
   DbRule,
-  MessageCondition,
-  MessageResponse,
-  MessageRule,
+  FilterRuleApi,
+  RuleCondition,
+  RuleResponse,
+  Rule,
   NewDbRule,
-  NewMessageRule,
+  NewRule,
   ResponseDbRule
 } from 'app/interfaces/rule.interfaces';
 
@@ -70,107 +71,105 @@ export class RulesModel {
     await this.postgres.createTableIfNotExist('rules', columns);
   }
 
-  public async addMessageRule(newMessageRule: NewMessageRule): Promise<void> {
-    const [rule] = await this.postgres.selectFromTable<DbRule>('rules', [], [{ columnName: 'name', value: newMessageRule.name, type: 'string' }]);
+  public async addRule(newRule: NewRule): Promise<void> {
+    const [rule] = await this.postgres.selectFromTable<DbRule>('rules', [], [{ columnName: 'name', value: newRule.name, type: 'string' }]);
     if(rule) {
-      throw new ConflictError(`Message rule with name: ${newMessageRule.name} already exist`);
+      throw new ConflictError(`Rule with name: ${newRule.name} already exist`);
     }
 
-    const newRule = this.convertToDbRule(newMessageRule);
+    const dbRule = this.convertToDbRule(newRule);
     try {
-      await this.postgres.insertInTable<NewDbRule>('rules', newRule);
+      await this.postgres.insertInTable<NewDbRule>('rules', dbRule);
     } catch {
-      throw new ServerApiError('Error add message rule');
+      throw new ServerApiError('Error add rule');
     }
   }
 
-  public async getMessageRule(id: number): Promise<MessageRule> {
-    const [rule] = await this.postgres.selectFromTable<DbRule>('rules', [], [{ columnName: 'id', value: id, type: 'number', operation: '=' }]);
-
-    if (rule) {
-      return this.convertFromDbRule([rule])[0];
-    } else {
-      throw new NotFoundError(`Message rule with id: ${id} not found`);
-    }
-  }
-
-  public async getAllMessageRules(): Promise<MessageRule[]> {
+  public async getRules(filter: FilterRuleApi): Promise<Rule[]> {
+    const conditions = this.getConditionsFromFilter(filter);
     try {
-      const rules = await this.postgres.selectFromTable<DbRule>('rules');
+      const rules = await this.postgres.selectFromTable<DbRule>('rules', [], conditions);
       return this.convertFromDbRule(rules);
     } catch {
-      throw new ServerApiError('Error get message rules');
+      throw new ServerApiError('Error get rules');
     }
   }
 
-  public async removeMessageRule(id: number): Promise<void> {
-    await this.getMessageRule(id);
+  public async removeRule(id: number): Promise<void> {
+    const [rule] = await this.postgres.selectFromTable<DbRule>('rules', [], [{ columnName: 'id', value: id, type: 'number', operation: '=' }]);
+    if (!rule) {
+      throw new NotFoundError(`Rule with id: ${id} not found`);
+    }
+
     await this.postgres.deleteFromTableById('rules', id);
   }
 
-  public async updateMessageRule(messageRule: MessageRule): Promise<void> {
-    await this.getMessageRule(messageRule.id);
+  public async updateRule(rule: Rule): Promise<void> {
+    const [dbRule] = await this.postgres.selectFromTable<DbRule>('rules', [], [{ columnName: 'id', value: rule.id, type: 'number', operation: '=' }]);
+    if (!dbRule) {
+      throw new NotFoundError(`Rule with id: ${rule.id} not found`);
+    }
 
-    const updatedRule = this.convertToDbRule(messageRule) as Partial<NewMessageRule>;
-    await this.postgres.updateTable('rules', messageRule.id, updatedRule);
+    const updatedRule = this.convertToDbRule(rule) as Partial<NewRule>;
+    await this.postgres.updateTable('rules', rule.id, updatedRule);
   }
 
-  private convertToDbRule(newMessageRule: NewMessageRule): NewDbRule {
+  private convertToDbRule(newRule: NewRule): NewDbRule {
     return {
-      name: newMessageRule.name,
+      name: newRule.name,
       date_added: new Date(),
-      probability: newMessageRule.probability ?? null,
-      ...this.getDbCondition(newMessageRule),
-      ...this.getDbResponse(newMessageRule),
+      probability: newRule.probability ?? null,
+      ...this.getDbCondition(newRule),
+      ...this.getDbResponse(newRule),
     };
   }
 
-  private getDbCondition(newMessageRule: NewMessageRule): ConditionDbRule {
-    if (newMessageRule.condition.type === 'regex') {
+  private getDbCondition(newRule: NewRule): ConditionDbRule {
+    if (newRule.condition.type === 'regex') {
       return {
         condition_type: 'regex',
-        regex_pattern: newMessageRule.condition.pattern
+        regex_pattern: newRule.condition.pattern
       };
     }
 
-    if (newMessageRule.condition.type === 'length') {
+    if (newRule.condition.type === 'length') {
       return {
         condition_type: 'length',
-        length_operator: newMessageRule.condition.operator,
-        length_value: newMessageRule.condition.value,
+        length_operator: newRule.condition.operator,
+        length_value: newRule.condition.value,
       };
     }
 
     return {
       condition_type: 'command',
-      command_name: newMessageRule.condition.name
+      command_name: newRule.condition.name
     };
   }
 
-  private getDbResponse(newMessageRule: NewMessageRule): ResponseDbRule {
-    if (newMessageRule.response.type === 'message') {
+  private getDbResponse(newRule: NewRule): ResponseDbRule {
+    if (newRule.response.type === 'message') {
       return {
         response_type: 'message',
-        response_text: newMessageRule.response.text,
-        response_reply: newMessageRule.response.reply,
+        response_text: newRule.response.text,
+        response_reply: newRule.response.reply,
       };
     }
 
-    if (newMessageRule.response.type === 'sticker') {
+    if (newRule.response.type === 'sticker') {
       return {
         response_type: 'sticker',
-        response_sticker_id: newMessageRule.response.stickerId,
-        response_reply: newMessageRule.response.reply,
+        response_sticker_id: newRule.response.stickerId,
+        response_reply: newRule.response.reply,
       };
     }
 
     return {
       response_type: 'emoji',
-      response_emoji: newMessageRule.response.emoji,
+      response_emoji: newRule.response.emoji,
     };
   }
 
-  private convertFromDbRule(dbRules: DbRule[]): MessageRule[] {
+  private convertFromDbRule(dbRules: DbRule[]): Rule[] {
     return dbRules.map(dbRule => ({
       id: dbRule.id,
       name: dbRule.name,
@@ -180,7 +179,7 @@ export class RulesModel {
     }));
   }
 
-  private getMessageCondition(dbRule: DbRule): MessageCondition {
+  private getMessageCondition(dbRule: DbRule): RuleCondition {
     if (dbRule.condition_type === 'regex') {
       return {
         type: 'regex',
@@ -202,7 +201,7 @@ export class RulesModel {
     };
   }
 
-  private getMessageResponse(dbRule: DbRule): MessageResponse {
+  private getMessageResponse(dbRule: DbRule): RuleResponse {
     if (dbRule.response_type === 'message') {
       return {
         type: 'message',
@@ -223,6 +222,45 @@ export class RulesModel {
       type: 'emoji',
       emoji: dbRule.response_emoji,
     };
+  }
+
+  private getConditionsFromFilter(filter: FilterRuleApi): Condition<DbRule>[] {
+    const conditions: Condition<DbRule>[] = [];
+
+    if (filter.id) {
+      conditions.push({
+        columnName: 'id',
+        value: filter.id,
+        type: 'number',
+        operation: '=',
+      });
+    }
+
+    if (filter.name) {
+      conditions.push({
+        columnName: 'name',
+        value: filter.name,
+        type: 'string',
+      });
+    }
+
+    if (filter.conditionType) {
+      conditions.push({
+        columnName: 'condition_type',
+        value: filter.conditionType,
+        type: 'string',
+      });
+    }
+
+    if (filter.responseType) {
+      conditions.push({
+        columnName: 'response_type',
+        value: filter.responseType,
+        type: 'string',
+      });
+    }
+
+    return conditions;
   }
 }
 
