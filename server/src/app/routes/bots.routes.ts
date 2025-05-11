@@ -5,8 +5,8 @@ import { writeHeadJson } from 'app/middlewares/writeHeadJson';
 import { BotsController } from 'app/controllers/bots.controller';
 import { validateSchema } from 'app/middlewares/validateSchema';
 import { IdSchema } from 'app/schemas/id.schema';
-import { NewBotSchema, UpdateBotSchema } from 'app/schemas/bot.schema';
-import { UpdateBotApi } from 'app/interfaces/bot.interfaces';
+import { FilterBotSchema, NewBotSchema, UpdateBotSchema } from 'app/schemas/bot.schema';
+import { FilterBotApi, UpdateBotApi } from 'app/interfaces/bot.interfaces';
 
 export class BotsRoutes {
   constructor(
@@ -15,12 +15,8 @@ export class BotsRoutes {
   ) {}
 
   public registerRoutes(): void {
-    this.router.get('/getAllBots', [writeHeadJson], async (req, res) => {
-      await this.botsController.getAllBots(req, res);
-    });
-
-    this.router.post<{ id: number }>('/getBot', [writeHeadJson, parseBody, validateSchema(IdSchema)], async (req, res) => {
-      await this.botsController.getBotById(req, res);
+    this.router.post<FilterBotApi>('/getBots', [writeHeadJson, parseBody, validateSchema(FilterBotSchema)], async (req, res) => {
+      await this.botsController.getBots(req, res);
     });
 
     this.router.post<{ token: string }>('/addBot', [writeHeadJson, parseBody, validateSchema(NewBotSchema)], async (req, res) => {

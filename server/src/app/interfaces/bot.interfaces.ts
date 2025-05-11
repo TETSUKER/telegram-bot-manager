@@ -42,3 +42,9 @@ export interface UpdateBotApi {
   ruleIds?: number[];
   lastUpdateId?: number;
 }
+
+export interface FilterBotApi {
+  id?: number;
+  username?: string;
+  ruleIds?: number[];
+}

@@ -25,13 +25,17 @@ export class Postgres {
         return `${String(condition.columnName)}::jsonb @> '[${condition.value}]'`;
       }
       if (condition.type === 'number') {
-        return `"${String(condition.columnName)}" ${condition.operation ?? '='} ${condition.value}`;
+        return `"${String(condition.columnName)}" ${condition.operation} ${condition.value}`;
       }
       if (condition.type === 'boolean') {
         return `${String(condition.columnName)} = ${condition.value ? 'true' : 'false'}`;
       }
+      if (condition.type === 'array' && condition.value.length) {
+        return `${String(condition.columnName)} @> array[${condition.value.join(',')}]`;
+      }
     }).join(` ${logicOperator ? logicOperator : 'and'} `)}` : '';
     const query = `select ${select} from ${tableName} ${queryConditions}`;
+    console.log(query);
     const { rows } = await this.client.query(query);
 
     return rows;

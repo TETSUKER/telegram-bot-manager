@@ -22,7 +22,7 @@ export class UpdatesService {
   }
 
   public async updateCachedBots(): Promise<void> {
-    const dbBots = await this.botModel.getAllBots();
+    const dbBots = await this.botModel.getBots({});
     const newBots = dbBots.filter(dbBot => !this.cachedBots.map(bot => bot.id).includes(dbBot.id));
     this.cachedBots = dbBots;
     for (const newBot of newBots) {

@@ -1,11 +1,36 @@
 export type CompareOperator = '=' | '>' | '>=' | '<=' | '<' | '<>';
 
-export interface Condition<T> {
-  columnName: keyof T;
-  value: string | number | boolean;
-  type: 'string' | 'json' | 'number' | 'boolean';
-  operation?: CompareOperator;
+export interface StringCondition {
+  value: string;
+  type: 'string';
 }
+
+export interface NumberCondition {
+  value: number;
+  type: 'number';
+  operation: CompareOperator;
+}
+
+export interface BooleanCondition {
+  value: boolean;
+  type: 'boolean';
+}
+
+export interface ArrayCondition {
+  value: unknown[];
+  type: 'array';
+}
+
+export interface JsonCondition {
+  value: object;
+  type: 'json';
+}
+
+export type ConditionType = StringCondition | NumberCondition | BooleanCondition | ArrayCondition | JsonCondition;
+
+export type Condition<T> = {
+  columnName: keyof T;
+} & ConditionType;
 
 export interface Column<T> {
   columnName: keyof T;

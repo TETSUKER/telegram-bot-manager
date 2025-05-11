@@ -85,7 +85,7 @@ export class RulesModel {
   }
 
   public async getMessageRule(id: number): Promise<MessageRule> {
-    const [rule] = await this.postgres.selectFromTable<DbRule>('rules', [], [{ columnName: 'id', value: id, type: 'number' }]);
+    const [rule] = await this.postgres.selectFromTable<DbRule>('rules', [], [{ columnName: 'id', value: id, type: 'number', operation: '=' }]);
 
     if (rule) {
       return this.convertFromDbRule([rule])[0];

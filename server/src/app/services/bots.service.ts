@@ -1,5 +1,5 @@
 import { diContainer } from 'app/core/di-container';
-import { DbBot } from 'app/interfaces/bot.interfaces';
+import { FilterBotApi } from 'app/interfaces/bot.interfaces';
 import { BotModel } from 'app/models/bot.model';
 import { UpdatesService } from './updates.service';
 import { TelegramService } from './telegram.service';
@@ -30,12 +30,8 @@ export class BotsService {
     await this.updatesService.updateCachedBots();
   }
 
-  public async getAllBots(): Promise<GetBotApi[]> {
-    return await this.botModel.getAllBots();
-  }
-
-  public async getBotById(botId: number): Promise<DbBot> {
-    return await this.botModel.getBot(botId);
+  public async getBots(filter: FilterBotApi): Promise<GetBotApi[]> {
+    return await this.botModel.getBots(filter);
   }
 
   public async removeBot(botId: number): Promise<void> {
