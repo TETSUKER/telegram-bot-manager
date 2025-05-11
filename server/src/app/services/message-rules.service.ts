@@ -1,11 +1,11 @@
 import { diContainer } from 'app/core/di-container';
-import { MessageRule, NewMessageRule } from 'app/interfaces/message-rules-model.interfaces';
-import { MessageRulesModel } from 'app/models/message-rules.model';
+import { MessageRule, NewMessageRule } from 'app/interfaces/rule.interfaces';
+import { RulesModel } from 'app/models/rules.model';
 import { UpdatesService } from './updates.service';
 
 export class MessageRulesService {
   constructor(
-    private messageRulesModel: MessageRulesModel,
+    private messageRulesModel: RulesModel,
     private updatesService: UpdatesService,
   ) {}
 
@@ -34,6 +34,6 @@ export class MessageRulesService {
 }
 
 diContainer.registerDependencies(MessageRulesService, [
-  MessageRulesModel,
+  RulesModel,
   UpdatesService,
 ]);

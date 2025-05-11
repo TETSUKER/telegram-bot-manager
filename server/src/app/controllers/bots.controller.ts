@@ -2,7 +2,7 @@ import { ServerResponse } from 'http';
 import { diContainer } from 'app/core/di-container';
 import { Request } from 'app/interfaces/http.interfaces';
 import { BotsService } from 'app/services/bots.service';
-import { Bot } from 'app/interfaces/bot-model.interfaces';
+import { UpdateBotApi } from 'app/interfaces/bot.interfaces';
 
 export class BotsController {
   constructor(private botsService: BotsService) {}
@@ -21,13 +21,6 @@ export class BotsController {
     }
   }
 
-  public async getBotInfo(request: Request<{ id: number }>, response: ServerResponse): Promise<void> {
-    if (request.body) {
-      const botInfo = await this.botsService.getBotInfo(request.body.id);
-      response.end(JSON.stringify(botInfo));
-    }
-  }
-
   public async getAllBots(_: Request, response: ServerResponse): Promise<void> {
     const bots = await this.botsService.getAllBots();
     response.end(JSON.stringify(bots));
@@ -40,7 +33,7 @@ export class BotsController {
     }
   }
 
-  public async updateBot(request: Request<Bot>, response: ServerResponse): Promise<void> {
+  public async updateBot(request: Request<UpdateBotApi>, response: ServerResponse): Promise<void> {
     if (request.body) {
       await this.botsService.updateBot(request.body);
       response.end('Bot succesfully updated');

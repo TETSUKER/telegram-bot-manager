@@ -1,5 +1,5 @@
 import { z, ZodType } from 'zod';
-import { NewMessageRule, MessageCondition, MessageResponse, MessageRule } from 'app/interfaces/message-rules-model.interfaces';
+import { NewMessageRule, MessageCondition, MessageResponse, MessageRule } from 'app/interfaces/rule.interfaces';
 
 const MessageConditionSchema: ZodType<MessageCondition> = z.union([
   z.object({
@@ -40,7 +40,7 @@ export const NewMessageRuleSchema = z.object({
   name: z.string().min(3).max(30),
   condition: MessageConditionSchema,
   response: MessageResponseSchema,
-  probability: z.number().min(0).max(100).optional(),
+  probability: z.number().min(0).max(100).nullable(),
 }) satisfies ZodType<NewMessageRule>;
 
 export const MessageRuleSchema = NewMessageRuleSchema.extend({

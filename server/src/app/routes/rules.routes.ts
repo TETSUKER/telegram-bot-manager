@@ -5,10 +5,10 @@ import { writeHeadJson } from 'app/middlewares/writeHeadJson';
 import { MessageRulesController } from 'app/controllers/message-rules.controller';
 import { validateSchema } from 'app/middlewares/validateSchema';
 import { MessageRuleSchema, NewMessageRuleSchema } from 'app/schemas/message-rule.schema';
-import { MessageRule, NewMessageRule } from 'app/interfaces/message-rules-model.interfaces';
+import { MessageRule, NewMessageRule } from 'app/interfaces/rule.interfaces';
 import { IdSchema } from 'app/schemas/id.schema';
 
-export class MessageRulesRoutes {
+export class RulesRoutes {
   constructor(
     private router: Router,
     private messageRulesController: MessageRulesController,
@@ -37,7 +37,7 @@ export class MessageRulesRoutes {
   }
 }
 
-diContainer.registerDependencies(MessageRulesRoutes, [
+diContainer.registerDependencies(RulesRoutes, [
   Router,
   MessageRulesController,
 ]);

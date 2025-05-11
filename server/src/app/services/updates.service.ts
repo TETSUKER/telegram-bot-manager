@@ -1,19 +1,21 @@
 import { diContainer } from 'app/core/di-container';
 import { TelegramService } from './telegram.service';
-import { BotModel } from 'app/models/bot.model';
-import { MessageRulesModel } from 'app/models/message-rules.model';
-import { Bot } from 'app/interfaces/bot-model.interfaces';
-import { MessageResponse, MessageCondition, MessageRule } from 'app/interfaces/message-rules-model.interfaces';
+import { RulesModel } from 'app/models/rules.model';
+import { MessageResponse, MessageCondition, MessageRule } from 'app/interfaces/rule.interfaces';
 import { TelegramUpdate } from 'app/interfaces/telegram-api.interfaces';
+import { GetBotApi } from 'app/interfaces/bot.interfaces';
+import { BotModel } from 'app/models/bot.model';
+import { Logger } from 'app/core/logger';
 
 export class UpdatesService {
-  private bots: Bot[] = [];
+  private cachedBots: GetBotApi[] = [];
   private messageRules: MessageRule[] = [];
 
   constructor(
     private telegramService: TelegramService,
     private botModel: BotModel,
-    private handlersModel: MessageRulesModel,
+    private rulesModel: RulesModel,
+    private logger: Logger,
   ) {
     this.updateCachedBots();
     this.updateCachedMessageRules();
@@ -21,42 +23,44 @@ export class UpdatesService {
 
   public async updateCachedBots(): Promise<void> {
     const dbBots = await this.botModel.getAllBots();
-    const newBots = dbBots.filter(dbBot => !this.bots.map(bot => bot.id).includes(dbBot.id));
-    this.bots = dbBots;
+    const newBots = dbBots.filter(dbBot => !this.cachedBots.map(bot => bot.id).includes(dbBot.id));
+    this.cachedBots = dbBots;
     for (const newBot of newBots) {
       this.pollBotUpdates(newBot.id);
     }
   }
 
   public async updateCachedMessageRules(): Promise<void> {
-    this.messageRules = await this.handlersModel.getAllMessageRules();
+    this.messageRules = await this.rulesModel.getAllMessageRules();
   }
 
   private async pollBotUpdates(botId: number): Promise<void> {
-    let bot = this.getBotById(botId);
+    let bot = this.getCachedBotById(botId);
+
     while(bot) {
       try {
         const updates = await this.telegramService.getUpdates(bot.token, bot.lastUpdateId + 1);
 
         if (Array.isArray(updates) && updates.length > 0) {
           for (const update of updates) {
+            // console.log(update);
             await this.handleUpdate(update, bot);
           }
         }
         await this.updateCachedBots();
-        bot = this.getBotById(botId);
+        bot = this.getCachedBotById(botId);
       } catch(err) {
-        console.error('UpdatesService error:', err);
+        this.logger.errorLog(`UpdatesService error: ${err}`);
         await this.delay(5000);
       }
     }
   }
 
-  private getBotById(botId: number): Bot | undefined {
-    return this.bots.find(bot => bot.id === botId);
+  private getCachedBotById(botId: number): GetBotApi | undefined {
+    return this.cachedBots.find(bot => bot.id === botId);
   }
 
-  private async handleUpdate(update: TelegramUpdate, bot: Bot): Promise<void> {
+  private async handleUpdate(update: TelegramUpdate, bot: GetBotApi): Promise<void> {
     const messageRules = this.messageRules.filter(handler => bot.ruleIds.includes(handler.id));
     const message = update.message?.text;
 
@@ -69,6 +73,7 @@ export class UpdatesService {
     }
 
     this.botModel.updateBot({...bot, lastUpdateId: update.update_id});
+    await this.updateCachedBots();
   }
 
   private isMessageMatchRule(messageCondition: MessageCondition, message: string): boolean {
@@ -93,7 +98,7 @@ export class UpdatesService {
     return false;
   }
 
-  private async sendMessageResponse(response: MessageResponse, update: TelegramUpdate, bot: Bot): Promise<void> {
+  private async sendMessageResponse(response: MessageResponse, update: TelegramUpdate, bot: GetBotApi): Promise<void> {
     const chatId = Number(update.message?.chat.id);
 
     if (response.type === 'message') {
@@ -117,5 +122,6 @@ export class UpdatesService {
 diContainer.registerDependencies(UpdatesService, [
   TelegramService,
   BotModel,
-  MessageRulesModel,
+  RulesModel,
+  Logger,
 ]);

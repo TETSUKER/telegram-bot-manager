@@ -10,6 +10,7 @@ export default defineConfig([
   tseslint.configs.recommended,
   {
     rules: {
+      "semi": "error",
       "@typescript-eslint/no-explicit-any": "warn",
     }
   }

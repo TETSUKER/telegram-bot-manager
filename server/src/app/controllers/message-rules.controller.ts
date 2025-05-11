@@ -1,7 +1,7 @@
 import { ServerResponse } from 'http';
 import { diContainer } from 'app/core/di-container';
 import { Request } from 'app/interfaces/http.interfaces';
-import { MessageRule, NewMessageRule } from 'app/interfaces/message-rules-model.interfaces';
+import { MessageRule, NewMessageRule } from 'app/interfaces/rule.interfaces';
 import { MessageRulesService } from 'app/services/message-rules.service';
 
 export class MessageRulesController {
@@ -9,7 +9,7 @@ export class MessageRulesController {
 
   public async addMessageRule(request: Request<NewMessageRule>, response: ServerResponse): Promise<void> {
     if (request.body) {
-      this.messageRulesService.addMessageRule(request.body);
+      await this.messageRulesService.addMessageRule(request.body);
       response.end('MessageRule added');
     }
   }

@@ -4,10 +4,9 @@ import { parseBody } from 'app/middlewares/parseBody';
 import { writeHeadJson } from 'app/middlewares/writeHeadJson';
 import { BotsController } from 'app/controllers/bots.controller';
 import { validateSchema } from 'app/middlewares/validateSchema';
-import { TokenSchema } from 'app/schemas/token.schema';
 import { IdSchema } from 'app/schemas/id.schema';
-import { Bot } from 'app/interfaces/bot-model.interfaces';
-import { BotSchema } from 'app/schemas/bot.schema';
+import { NewBotSchema, UpdateBotSchema } from 'app/schemas/bot.schema';
+import { UpdateBotApi } from 'app/interfaces/bot.interfaces';
 
 export class BotsRoutes {
   constructor(
@@ -24,7 +23,7 @@ export class BotsRoutes {
       await this.botsController.getBotById(req, res);
     });
 
-    this.router.post<{ token: string }>('/addBot', [writeHeadJson, parseBody, validateSchema(TokenSchema)], async (req, res) => {
+    this.router.post<{ token: string }>('/addBot', [writeHeadJson, parseBody, validateSchema(NewBotSchema)], async (req, res) => {
       await this.botsController.addBot(req, res);
     });
 
@@ -32,11 +31,7 @@ export class BotsRoutes {
       await this.botsController.removeBot(req, res);
     });
 
-    this.router.post<{ id: number }>('/getBotInfo', [writeHeadJson, parseBody, validateSchema(IdSchema)], async (req, res) => {
-      await this.botsController.getBotInfo(req, res);
-    });
-
-    this.router.post<Bot>('/updateBot', [writeHeadJson, parseBody, validateSchema(BotSchema)], async (req, res) => {
+    this.router.post<UpdateBotApi>('/updateBot', [writeHeadJson, parseBody, validateSchema(UpdateBotSchema)], async (req, res) => {
       await this.botsController.updateBot(req, res);
     });
   }
