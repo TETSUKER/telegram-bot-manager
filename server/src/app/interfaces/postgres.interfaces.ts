@@ -34,7 +34,7 @@ export type Condition<T> = {
 
 export interface Column<T> {
   columnName: keyof T;
-  type: 'serial' | 'varchar' | 'boolean' | 'timestamp' | 'text' | 'json' | 'int';
+  type: 'serial' | 'varchar' | 'boolean' | 'timestamp' | 'text' | 'json' | 'int' | 'bigint';
   length?: number;
   primary?: boolean;
   unique?: boolean;

@@ -10,7 +10,7 @@ export class RulesController {
   public async addRule(request: Request<NewRule>, response: ServerResponse): Promise<void> {
     if (request.body) {
       await this.rulesService.addRule(request.body);
-      response.end('MessageRule added');
+      response.end('Rule added');
     }
   }
 
@@ -23,14 +23,14 @@ export class RulesController {
     if (request.body) {
       const ruleId = request.body.id;
       await this.rulesService.removeRule(ruleId);
-      response.end('Message rule successfully removed');
+      response.end('Rule successfully removed');
     }
   }
 
   public async updateRule(request: Request<Rule>, response: ServerResponse): Promise<void> {
     if (request.body) {
       await this.rulesService.updateRule(request.body);
-      response.end('Message rule seccessfully updated');
+      response.end('Rule seccessfully updated');
     }
   }
 }

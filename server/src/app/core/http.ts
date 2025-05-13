@@ -6,12 +6,13 @@ import { Middleware } from 'app/interfaces/middleware.interfaces';
 import { getFullUrl } from 'app/utils/getFullUrl';
 import { AddressInfo } from 'node:net';
 import { ApiError } from 'app/errors/api.error';
+import { Logger } from './logger';
 
 export class Http {
   private httpServer: Server;
   private routes: Routes = {};
 
-  constructor() {
+  constructor(private logger: Logger) {
     this.httpServer = this.getServer();
   }
 
@@ -47,7 +48,7 @@ export class Http {
         this.handleError(err as ApiError, res);
       }
     } else {
-      throw new Error(`Handler for ${req.method} with path: ${parsedUrl.pathname} doesn't exist.`)
+      throw new Error(`Handler for ${req.method} with path: ${parsedUrl.pathname} doesn't exist.`);
     }
   }
 
@@ -94,11 +95,11 @@ export class Http {
   }
 
   public listen(port: number, hostname: string, callback: () => void): void {
-    console.log('Starting server...');
+    this.logger.infoLog('Starting server...');
     this.httpServer.listen(port, hostname, () => {
       callback();
       const addr = this.httpServer.address() as AddressInfo;
-      console.log(`Server running at http://${addr.address}:${addr.port}`);
+      this.logger.successfulLog(`Server running at http://${addr.address}:${addr.port}`);
     });
   }
 
@@ -107,4 +108,4 @@ export class Http {
   }
 }
 
-diContainer.registerDependencies(Http);
+diContainer.registerDependencies(Http, [Logger]);

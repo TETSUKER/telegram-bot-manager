@@ -35,10 +35,15 @@ export class Postgres {
       }
     }).join(` ${logicOperator ? logicOperator : 'and'} `)}` : '';
     const query = `select ${select} from ${tableName} ${queryConditions}`;
-    console.log(query);
-    const { rows } = await this.client.query(query);
-
-    return rows;
+    
+    try {
+      this.logger.infoLog(`Select from ${tableName} query: ${query}`);
+      const { rows } = await this.client.query(query);
+      return rows;
+    } catch(err) {
+      this.logger.errorLog(`Select from ${tableName} error: ${err}`);
+      throw err;
+    }
   }
 
   public async insertInTable<T>(tableName: TableName, object: {[Key in keyof T]: T[Key]}): Promise<any> {
@@ -59,6 +64,7 @@ export class Postgres {
     const query = `insert into ${tableName} (${columns})\nvalues (${values})`;
 
     try {
+      this.logger.infoLog(`Insert in ${tableName} query: ${query}`);
       return await this.client.query(query);
     } catch(err) {
       this.logger.errorLog(`Insert in ${tableName} error: ${err}`);
@@ -86,6 +92,7 @@ export class Postgres {
     const query = `update ${tableName} set ${values} where id=${id}`;
 
     try {
+      this.logger.infoLog(`Update ${tableName} query: ${query}`);
       return await this.client.query(query);
     } catch(err) {
       this.logger.errorLog(`Update ${tableName} error: ${err}`);
@@ -97,6 +104,7 @@ export class Postgres {
     const query = `delete from ${tableName} where id=${id}`;
 
     try {
+      this.logger.infoLog(`Delete from ${tableName} query: ${query}`);
       return await this.client.query(query);
     } catch(err) {
       this.logger.errorLog(`Delete from ${tableName} error: ${err}`);
@@ -115,6 +123,7 @@ export class Postgres {
     }).join('\n') + '\n);';
 
     try {
+      this.logger.infoLog(`Create ${tableName} query: ${query}`);
       return await this.client.query(query);
     } catch(err) {
       this.logger.errorLog(`Create ${tableName} if not exists error: ${err}`);
