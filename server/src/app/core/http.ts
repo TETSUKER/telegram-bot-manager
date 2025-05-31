@@ -7,6 +7,7 @@ import { getFullUrl } from 'app/utils/getFullUrl';
 import { AddressInfo } from 'node:net';
 import { ApiError } from 'app/errors/api.error';
 import { Logger } from './logger';
+import { ServerApiError } from 'app/errors/server.error';
 
 export class Http {
   private httpServer: Server;
@@ -25,20 +26,21 @@ export class Http {
   private async handleRequest(req: Request, res: ServerResponse): Promise<void> {
     const fullUrl = getFullUrl(req);
     const parsedUrl = new URL(fullUrl);
+    const routePath = this.routes[parsedUrl.pathname];
 
-    if (!this.routes[parsedUrl.pathname]) {
+    if (routePath === undefined) {
       res.statusCode = 404;
       res.end(`Path: ${parsedUrl.pathname} doesn't exist.`);
       return;
     }
 
-    if (!this.routes[parsedUrl.pathname][req.method as RequestMethod]) {
+    if (routePath[req.method as RequestMethod] === undefined) {
       res.statusCode = 404;
       res.end(`${req.method} with path: ${parsedUrl.pathname} doesn't exist.`);
       return;
     }
 
-    const route = this.routes[parsedUrl.pathname][req.method as RequestMethod];
+    const route = routePath[req.method as RequestMethod];
 
     if (route?.callback) {
       try {
@@ -78,8 +80,12 @@ export class Http {
         };
 
         try {
-          const result = middlewares[index](req, res, next);
+          const middleware = middlewares[index];
+          if (middleware === undefined) {
+            throw new ServerApiError('Middleware is undefined');
+          }
 
+          const result = middleware(req, res, next);
           if (result instanceof Promise) {
             result.catch(reject);
           }

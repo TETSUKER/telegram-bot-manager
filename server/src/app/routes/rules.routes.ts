@@ -4,9 +4,9 @@ import { parseBody } from 'app/middlewares/parseBody';
 import { writeHeadJson } from 'app/middlewares/writeHeadJson';
 import { RulesController } from 'app/controllers/rules.controller';
 import { validateSchema } from 'app/middlewares/validateSchema';
-import { RuleSchema, NewRuleSchema, FilterRuleSchema } from 'app/schemas/rule.schema';
-import { Rule, NewRule, FilterRuleApi } from 'app/interfaces/rule.interfaces';
-import { IdSchema } from 'app/schemas/id.schema';
+import { NewRuleSchema, FilterRuleSchema, UpdateRuleSchema } from 'app/schemas/rule.schema';
+import { NewRule, FilterRuleApi, UpdateRuleApi } from 'app/interfaces/rule.interfaces';
+import { IdsSchema } from 'app/schemas/id.schema';
 
 export class RulesRoutes {
   constructor(
@@ -23,11 +23,11 @@ export class RulesRoutes {
       await this.rulesController.addRule(req, res);
     });
 
-    this.router.post<{ id: number }>('/removeRule', [writeHeadJson, parseBody, validateSchema(IdSchema)], async (req, res) => {
+    this.router.post<{ ids: number[] }>('/removeRules', [writeHeadJson, parseBody, validateSchema(IdsSchema)], async (req, res) => {
       await this.rulesController.removeRule(req, res);
     });
 
-    this.router.post<Rule>('/updateRule', [writeHeadJson, parseBody, validateSchema(RuleSchema)], async (req, res) => {
+    this.router.post<UpdateRuleApi>('/updateRule', [writeHeadJson, parseBody, validateSchema(UpdateRuleSchema)], async (req, res) => {
       await this.rulesController.updateRule(req, res);
     });
   }

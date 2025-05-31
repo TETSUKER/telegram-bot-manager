@@ -3,12 +3,13 @@ export type CompareOperator = '=' | '>' | '>=' | '<=' | '<' | '<>';
 export interface StringCondition {
   value: string;
   type: 'string';
+  exactMatch: boolean;
 }
 
 export interface NumberCondition {
   value: number;
   type: 'number';
-  operation: CompareOperator;
+  operation?: CompareOperator;
 }
 
 export interface BooleanCondition {
@@ -17,7 +18,7 @@ export interface BooleanCondition {
 }
 
 export interface ArrayCondition {
-  value: unknown[];
+  values: unknown[];
   type: 'array';
 }
 
@@ -29,7 +30,7 @@ export interface JsonCondition {
 export type ConditionType = StringCondition | NumberCondition | BooleanCondition | ArrayCondition | JsonCondition;
 
 export type Condition<T> = {
-  columnName: keyof T;
+  columnName: T extends T ? keyof T : never;
 } & ConditionType;
 
 export interface Column<T> {

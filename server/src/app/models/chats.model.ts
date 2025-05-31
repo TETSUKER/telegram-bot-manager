@@ -4,10 +4,10 @@ import { Postgres } from 'app/core/postgres';
 import { ConflictError } from 'app/errors/conflict.error';
 import { NotFoundError } from 'app/errors/not-found.error';
 import { ServerApiError } from 'app/errors/server.error';
-import { DbChat, FilterChatApi, GetChatApi, NewChatApi, NewDbChat, UpdateChatApi } from 'app/interfaces/chat.interfaces';
+import { Chat, DbChat, FilterChatApi, NewChatApi, NewDbChat, UpdateChatApi } from 'app/interfaces/chat.interfaces';
 import { Column, Condition } from 'app/interfaces/postgres.interfaces';
 
-export class ChatModel {
+export class ChatsModel {
   constructor(
     private postgres: Postgres,
     private logger: Logger,
@@ -33,7 +33,7 @@ export class ChatModel {
     await this.postgres.createTableIfNotExist('chats', columns);
   }
 
-  public async getChats(filter: FilterChatApi): Promise<GetChatApi[]> {
+  public async getChats(filter: FilterChatApi): Promise<Chat[]> {
     const conditions = this.getConditionsFromFilter(filter);
 
     try {
@@ -45,8 +45,36 @@ export class ChatModel {
     }
   }
 
+  private getConditionsFromFilter(filter: FilterChatApi): Condition<DbChat>[] {
+    const conditions: Condition<DbChat>[] = [];
+
+    if (filter.ids?.length) {
+      filter.ids.forEach(id => {
+        conditions.push({
+          columnName: 'id',
+          value: id,
+          type: 'number',
+          operation: '=',
+        });
+      });
+    }
+
+    if (filter.names?.length) {
+      filter.names.forEach(name => {
+        conditions.push({
+          columnName: 'name',
+          value: name,
+          type: 'string',
+          exactMatch: false,
+        });
+      });
+    }
+
+    return conditions;
+  }
+
   public async addChat(newChat: NewChatApi): Promise<void> {
-    const [dbChat] = await this.getChats({ name: newChat.name });
+    const [dbChat] = await this.getChats({ names: [newChat.name] });
 
     if (dbChat) {
       throw new ConflictError(`Chat with same name already exist`);
@@ -61,13 +89,9 @@ export class ChatModel {
     }
   }
 
-  public async removeChat(id: number): Promise<void> {
-    const [chat] = await this.postgres.selectFromTable<DbChat>('chats', [], [{ columnName: 'id', value: id, type: 'number', operation: '=' }]);
-    if (!chat) {
-      throw new NotFoundError(`Chat with id: ${id} not found`);
-    }
-
-    await this.postgres.deleteFromTableById('chats', id);
+  public async removeChat(ids: number[]): Promise<Chat[]> {
+    const { rows } = await this.postgres.deleteFromTableByIds('chats', ids);
+    return this.convertFromDbChat(rows);
   }
 
   public async updateChat(chat: UpdateChatApi): Promise<void> {
@@ -76,42 +100,20 @@ export class ChatModel {
       throw new NotFoundError(`Chat with id: ${chat.id} not found`);
     }
 
-    const updatedChat = this.convertFromGetApiChat({ ...chat, dateAdded: dbChat.date_added });
+    const updatedChat = this.convertFromUpdateChat(chat);
     await this.postgres.updateTable('chats', chat.id, updatedChat);
   }
 
-  private getConditionsFromFilter(filter: FilterChatApi): Condition<DbChat>[] {
-    const conditions: Condition<DbChat>[] = [];
+  private convertFromUpdateChat(chat: UpdateChatApi): Partial<DbChat> {
+    const updateDbChat: Partial<DbChat> = {};
 
-    if (filter.id) {
-      conditions.push({
-        columnName: 'id',
-        value: filter.id,
-        type: 'number',
-        operation: '=',
-      });
-    }
+    if ('name' in chat) updateDbChat.name = chat.name;
+    if ('chatId' in chat) updateDbChat.chat_id = chat.chatId;
 
-    if (filter.chatId) {
-      conditions.push({
-        columnName: 'chat_id',
-        value: filter.chatId,
-        type: 'string',
-      });
-    }
-
-    if (filter.name) {
-      conditions.push({
-        columnName: 'name',
-        value: filter.name,
-        type: 'string',
-      });
-    }
-
-    return conditions;
+    return updateDbChat;
   }
 
-  private convertFromDbChat(dbChats: DbChat[]): GetChatApi[] {
+  private convertFromDbChat(dbChats: DbChat[]): Chat[] {
     return dbChats.map(dbChat => ({
       id: dbChat.id,
       chatId: dbChat.chat_id,
@@ -128,7 +130,7 @@ export class ChatModel {
     };
   }
 
-  private convertFromGetApiChat(chat: GetChatApi): DbChat {
+  private convertToDbChat(chat: Chat): DbChat {
     return {
       id: chat.id,
       chat_id: chat.chatId,
@@ -138,7 +140,7 @@ export class ChatModel {
   }
 }
 
-diContainer.registerDependencies(ChatModel, [
+diContainer.registerDependencies(ChatsModel, [
   Postgres,
   Logger,
 ]);

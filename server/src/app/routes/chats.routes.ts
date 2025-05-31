@@ -6,7 +6,7 @@ import { parseBody } from 'app/middlewares/parseBody';
 import { validateSchema } from 'app/middlewares/validateSchema';
 import { writeHeadJson } from 'app/middlewares/writeHeadJson';
 import { FilterChatSchema, NewChatSchema, UpdateChatSchema } from 'app/schemas/chat.schema';
-import { IdSchema } from 'app/schemas/id.schema';
+import { IdsSchema } from 'app/schemas/id.schema';
 
 export class ChatsRoutes {
   constructor(
@@ -23,7 +23,7 @@ export class ChatsRoutes {
       await this.chatsController.addChat(req, res);
     });
 
-    this.router.post<{ id: number }>('/removeChat', [writeHeadJson, parseBody, validateSchema(IdSchema)], async (req, res) => {
+    this.router.post<{ ids: number[] }>('/removeChat', [writeHeadJson, parseBody, validateSchema(IdsSchema)], async (req, res) => {
       await this.chatsController.removeChat(req, res);
     });
 

@@ -1,11 +1,16 @@
 import { diContainer } from 'app/core/di-container';
-import { FilterChatApi, GetChatApi, NewChatApi, UpdateChatApi } from 'app/interfaces/chat.interfaces';
-import { ChatModel } from 'app/models/chat.model';
+import { EventBus } from 'app/core/event-bus';
+import { FilterChatApi, Chat, NewChatApi, UpdateChatApi } from 'app/interfaces/chat.interfaces';
+import { EventName } from 'app/interfaces/event-bus.interfaces';
+import { ChatsModel } from 'app/models/chats.model';
 
 export class ChatsService {
-  constructor(private chatModel: ChatModel) {}
+  constructor(
+    private chatModel: ChatsModel,
+    private eventBus: EventBus,
+  ) {}
 
-  public async getChats(filter: FilterChatApi): Promise<GetChatApi[]> {
+  public async getChats(filter: FilterChatApi): Promise<Chat[]> {
     return await this.chatModel.getChats(filter);
   }
 
@@ -13,8 +18,10 @@ export class ChatsService {
     await this.chatModel.addChat(newChat);
   }
 
-  public async removeChat(chatId: number): Promise<void> {
-    await this.chatModel.removeChat(chatId);
+  public async removeChat(chatIds: number[]): Promise<void> {
+    const removedChats = await this.chatModel.removeChat(chatIds);
+    const removedChatsIds = removedChats.map(chat => chat.id);
+    this.eventBus.publish(EventName.chats_removed, removedChatsIds);
   }
 
   public async updateChat(chat: UpdateChatApi): Promise<void> {
@@ -22,4 +29,7 @@ export class ChatsService {
   }
 }
 
-diContainer.registerDependencies(ChatsService, [ChatModel]);
+diContainer.registerDependencies(ChatsService, [
+  ChatsModel,
+  EventBus,
+]);

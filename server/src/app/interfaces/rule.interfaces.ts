@@ -1,9 +1,15 @@
 export type MessageLengthOperator = '>' | '<' | '>=' | '<=' | '=';
+export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+
+export type Schedule =
+  | { type: 'weekly', dayOfWeek: DayOfWeek, hour: number, minute: number }
+  | { type: 'annually', day: number, month: number, hour: number, minute: number }
 
 export type RuleCondition =
   | { type: 'regex', pattern: string }
   | { type: 'length', operator: MessageLengthOperator, value: number }
   | { type: 'command', name: string }
+  | { type: 'schedule', schedule: Schedule, scheduleChatIds: number[] }
 
 export type RuleResponse =
   | { type: 'message', text: string, reply: boolean }
@@ -21,11 +27,16 @@ export interface Rule extends NewRule {
   id: number;
 }
 
+export interface UpdateRuleApi extends Partial<NewRule> {
+  id: number;
+}
+
 export interface FilterRuleApi {
-  id?: number;
-  name?: string;
-  conditionType?: 'regex' | 'length' | 'command';
-  responseType?: 'message' | 'sticker' | 'emoji';
+  ids?: number[];
+  names?: string[];
+  conditionTypes?: ('regex' | 'length' | 'command' | 'schedule')[];
+  responseTypes?: ('message' | 'sticker' | 'emoji')[];
+  scheduleChatIds?: number[];
 }
 
 interface RegexConditionDbRule {
@@ -44,7 +55,28 @@ interface CommandConditionDbRule {
   command_name: string;
 }
 
-export type ConditionDbRule = RegexConditionDbRule | LengthConditionDbRule | CommandConditionDbRule;
+interface WeeklyScheduleDb {
+  condition_type: 'schedule';
+  schedule_type: 'weekly';
+  schedule_day_of_week: DayOfWeek;
+  schedule_hour: number;
+  schedule_minute: number;
+  schedule_chat_ids: number[];
+}
+
+interface AnnuallyScheduleDb {
+  condition_type: 'schedule';
+  schedule_type: 'annually';
+  schedule_month: number;
+  schedule_day: number;
+  schedule_hour: number;
+  schedule_minute: number;
+  schedule_chat_ids: number[];
+}
+
+export type ScheduleConditionDbRule = WeeklyScheduleDb | AnnuallyScheduleDb;
+
+export type ConditionDbRule = RegexConditionDbRule | LengthConditionDbRule | CommandConditionDbRule | ScheduleConditionDbRule;
 
 interface MessageResponseDbRule {
   response_type: 'message';
@@ -80,9 +112,7 @@ export type DbRule = {
 export type UpdateDbRule = Partial<NewDbRule>;
 
 export type CreateDbRuleTable =
-  RegexConditionDbRule &
-  LengthConditionDbRule &
-  CommandConditionDbRule &
+  ConditionDbRule &
   MessageResponseDbRule &
   StickerResponseDbRule &
   EmojiResponseDbRule &

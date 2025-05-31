@@ -15,15 +15,20 @@ export interface NewChatApi {
   name: string;
 }
 
-export interface GetChatApi extends NewChatApi {
-  dateAdded: Date;
-  id: number;
-}
-
-export type FilterChatApi = Partial<GetChatApi>;
-
-export interface UpdateChatApi {
+export interface Chat {
   id: number;
   chatId: string;
   name: string;
+  dateAdded: Date;
+}
+
+export interface FilterChatApi {
+  ids?: number[];
+  names?: string[];
+};
+
+export interface UpdateChatApi {
+  id: number;
+  chatId?: string;
+  name?: string;
 }

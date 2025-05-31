@@ -1,21 +1,42 @@
 import { z, ZodType } from 'zod';
-import { NewRule, RuleCondition, RuleResponse, Rule, FilterRuleApi } from 'app/interfaces/rule.interfaces';
+import { NewRule, RuleCondition, RuleResponse, Rule, FilterRuleApi, UpdateRuleApi } from 'app/interfaces/rule.interfaces';
 
 const MessageConditionSchema: ZodType<RuleCondition> = z.union([
   z.object({
-    type: z.literal("regex"),
-    pattern: z.string().min(1, "Паттерн не может быть пустым"),
+    type: z.literal('regex'),
+    pattern: z.string().min(1, 'Паттерн не может быть пустым'),
   }),
   z.object({
-    type: z.literal("length"),
-    operator: z.enum([">", "<", ">=", "<=", "="]),
-    value: z.number().int().nonnegative("Значение должно быть ≥ 0"),
+    type: z.literal('length'),
+    operator: z.enum(['>', '<', '>=', '<=', '=']),
+    value: z.number().int().nonnegative('Значение должно быть ≥ 0'),
   }),
   z.object({
-    type: z.literal("command"),
-    name: z.string().min(1, "Имя команды обязательно"),
+    type: z.literal('command'),
+    name: z.string().min(1, 'Имя команды обязательно'),
     minArgs: z.number().int().nonnegative().optional(),
     maxArgs: z.number().int().nonnegative().optional(),
+  }),
+  z.object({
+    type: z.literal('schedule'),
+    schedule: z.object({
+      type: z.literal('weekly'),
+      dayOfWeek: z.enum(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']),
+      hour: z.number(),
+      minute: z.number(),
+    }),
+    scheduleChatIds: z.array(z.number()),
+  }),
+  z.object({
+    type: z.literal('schedule'),
+    schedule: z.object({
+      type: z.literal('annually'),
+      day: z.number(),
+      month: z.number(),
+      hour: z.number(),
+      minute: z.number(),
+    }),
+    scheduleChatIds: z.array(z.number()),
   }),
 ]);
 
@@ -48,8 +69,16 @@ export const RuleSchema = NewRuleSchema.extend({
 }) satisfies ZodType<Rule>;
 
 export const FilterRuleSchema = z.object({
-  id: z.number().optional(),
-  name: z.string().optional(),
-  conditionType: z.enum(["regex", "length", "command"]).optional(),
-  responseType: z.enum(["message", "sticker", "emoji"]).optional(),
+  ids: z.array(z.number()).optional(),
+  names: z.array(z.string()).optional(),
+  conditionType: z.array(z.enum(['regex', 'length', 'command'])).optional(),
+  responseType: z.array(z.enum(['message', 'sticker', 'emoji'])).optional(),
+  scheduleChatIds: z.array(z.number()).optional(),
 }) satisfies ZodType<FilterRuleApi>;
+
+export const UpdateRuleSchema = z.object({
+  id: z.number(),
+  condition: MessageConditionSchema.optional(),
+  response: MessageResponseSchema.optional(),
+  probability: z.number().min(0).max(100).nullable().optional(),
+}) satisfies ZodType<UpdateRuleApi>;

@@ -9,6 +9,8 @@
     "rootDir": "src",
     "baseUrl": "src",
     "lib": ["ES2020"],
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
   },
   "include": [
     "./**/*.ts",

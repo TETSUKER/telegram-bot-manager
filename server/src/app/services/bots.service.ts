@@ -1,20 +1,32 @@
 import { diContainer } from 'app/core/di-container';
 import { FilterBotApi } from 'app/interfaces/bot.interfaces';
 import { BotModel } from 'app/models/bot.model';
-import { UpdatesService } from './updates.service';
 import { TelegramService } from './telegram.service';
-import { GetBotApi, UpdateBotApi } from 'app/interfaces/bot.interfaces';
+import { Bot, UpdateBotApi } from 'app/interfaces/bot.interfaces';
+import { EventBus } from 'app/core/event-bus';
+import { EventName } from 'app/interfaces/event-bus.interfaces';
 
 export class BotsService {
   constructor(
     private botModel: BotModel,
-    private updatesService: UpdatesService,
     private telegramService: TelegramService,
-  ) {}
+    private eventBus: EventBus,
+  ) {
+    this.eventBus.subscribe(EventName.rules_removed, async removedRuleIds => {
+      const bots = await this.getBots({ ruleIds: removedRuleIds });
+      for (const bot of bots) {
+        const remainingRuleIds = bot.ruleIds.filter(id => !removedRuleIds.includes(id));
+        await this.updateBot({
+          id: bot.id,
+          ruleIds: remainingRuleIds,
+        });
+      }
+    });
+  }
 
   public async addBot(token: string): Promise<void> {
     const botInfo = await this.telegramService.getBotInfo(token);
-    await this.botModel.addBot({
+    const addedBot = await this.botModel.addBot({
       token,
       username: botInfo.username || '',
       rule_ids: [],
@@ -27,26 +39,49 @@ export class BotsService {
       has_main_web_app: botInfo.has_main_web_app || false,
       last_update_id: 0,
     });
-    await this.updatesService.updateCachedBots();
+    if (addedBot) {
+      this.eventBus.publish(EventName.bot_added, addedBot);
+    }
   }
 
-  public async getBots(filter: FilterBotApi): Promise<GetBotApi[]> {
+  public async getBots(filter: FilterBotApi): Promise<Bot[]> {
     return await this.botModel.getBots(filter);
   }
 
-  public async removeBot(botId: number): Promise<void> {
-    await this.botModel.removeBot(botId);
-    await this.updatesService.updateCachedBots();
+  public async removeBot(botIds: number[]): Promise<void> {
+    const oldBots = await this.getBots({ ids: botIds });
+    await this.botModel.removeBot(botIds);
+    await this.publishDeletedRulesFromBots(oldBots);
   }
 
-  public async updateBot(bot: UpdateBotApi): Promise<void> {
-    await this.botModel.updateBot(bot);
-    await this.updatesService.updateCachedBots();
+  private async publishDeletedRulesFromBots(bots: Bot[]): Promise<void> {
+    for (const bot of bots) {
+      this.eventBus.publish(EventName.removed_rules_from_bot, { ruleIds: bot.ruleIds, botId: bot.id });
+    }
+  }
+
+  public async updateBot(updatedBot: UpdateBotApi): Promise<Bot | null> {
+    const [oldBot] = await this.getBots({ ids: [updatedBot.id] });
+    const newBot = await this.botModel.updateBot(updatedBot);
+
+    if (oldBot && newBot) {
+      await this.publishChangedBotRules(oldBot, newBot);
+    }
+
+    return newBot;
+  }
+
+  private async publishChangedBotRules(oldBot: Bot, newBot: Bot): Promise<void> {
+    const addedRuleIds = newBot.ruleIds?.filter(id => !oldBot.ruleIds?.includes(id)) ?? [];
+    this.eventBus.publish(EventName.added_rules_to_bot, { ruleIds: addedRuleIds, botId: newBot.id });
+
+    const removedRuleIds = oldBot.ruleIds?.filter(id => !newBot.ruleIds?.includes(id)) ?? [];
+    this.eventBus.publish(EventName.removed_rules_from_bot, { ruleIds: removedRuleIds, botId: newBot.id });
   }
 }
 
 diContainer.registerDependencies(BotsService, [
   BotModel,
-  UpdatesService,
   TelegramService,
+  EventBus,
 ]);

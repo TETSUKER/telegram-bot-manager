@@ -19,10 +19,10 @@ export class ChatsController {
     }
   }
 
-  public async removeChat(request: Request<{ id: number }>, response: ServerResponse): Promise<void> {
+  public async removeChat(request: Request<{ ids: number[] }>, response: ServerResponse): Promise<void> {
     if (request.body) {
-      const id = request.body.id;
-      await this.chatsService.removeChat(id);
+      const ids = request.body.ids;
+      await this.chatsService.removeChat(ids);
       response.end('Chat successfully removed');
     }
   }

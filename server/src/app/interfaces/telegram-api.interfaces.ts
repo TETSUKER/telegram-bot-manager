@@ -136,9 +136,23 @@ export interface TelegramMessage {
   entities?: TelegramMessageEntity[];
 }
 
+export interface TelegramChatMember {
+  status: 'creator' | 'administrator' | 'member' | 'restricted' | 'left' | 'kicked';
+  user: TelegramUser;
+}
+
+export interface TelegramChatMemberUpdated {
+  chat: TelegramChat;
+  from: TelegramUser;
+  date: number;
+  old_chat_member: TelegramChatMember;
+  new_chat_member: TelegramChatMember;
+}
+
 export interface TelegramUpdate {
   update_id: number;
   message?: TelegramMessage;
+  my_chat_member?: TelegramChatMemberUpdated;
 }
 
 export interface TelegramApiResponse<T> {

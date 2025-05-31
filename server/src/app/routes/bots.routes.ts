@@ -4,7 +4,7 @@ import { parseBody } from 'app/middlewares/parseBody';
 import { writeHeadJson } from 'app/middlewares/writeHeadJson';
 import { BotsController } from 'app/controllers/bots.controller';
 import { validateSchema } from 'app/middlewares/validateSchema';
-import { IdSchema } from 'app/schemas/id.schema';
+import { IdsSchema } from 'app/schemas/id.schema';
 import { FilterBotSchema, NewBotSchema, UpdateBotSchema } from 'app/schemas/bot.schema';
 import { FilterBotApi, UpdateBotApi } from 'app/interfaces/bot.interfaces';
 
@@ -23,7 +23,7 @@ export class BotsRoutes {
       await this.botsController.addBot(req, res);
     });
 
-    this.router.post<{ id: number }>('/removeBot', [writeHeadJson, parseBody, validateSchema(IdSchema)], async (req, res) => {
+    this.router.post<{ ids: number[] }>('/removeBot', [writeHeadJson, parseBody, validateSchema(IdsSchema)], async (req, res) => {
       await this.botsController.removeBot(req, res);
     });
 

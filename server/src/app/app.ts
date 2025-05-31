@@ -3,6 +3,8 @@ import { Http } from 'app/core/http';
 import { Routes } from 'app/routes/routes';
 import { Router } from 'app/core/router';
 import { Dotenv } from './core/dotenv';
+import { ScheduleMessagesService } from './services/schedule-messages.service';
+import { UpdatesService } from './services/updates.service';
 
 export class App {
   constructor(
@@ -10,6 +12,8 @@ export class App {
     private router: Router,
     private routes: Routes,
     private dotenv: Dotenv,
+    private updatesService: UpdatesService,
+    private scheduleMessagesService: ScheduleMessagesService
   ) {}
 
   start() {
@@ -28,4 +32,6 @@ diContainer.registerDependencies(App, [
   Router,
   Routes,
   Dotenv,
+  UpdatesService,
+  ScheduleMessagesService,
 ]);

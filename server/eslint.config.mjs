@@ -12,6 +12,9 @@ export default defineConfig([
     rules: {
       "semi": "error",
       "@typescript-eslint/no-explicit-any": "warn",
+      "indent": ["error", 2 , {
+        "SwitchCase": 1
+      }]
     }
   }
 ]);

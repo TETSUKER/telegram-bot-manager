@@ -22,7 +22,7 @@ export interface CreateBotApi {
   token: string;
 }
 
-export interface GetBotApi {
+export interface Bot {
   id: number;
   token: string;
   username: string;
@@ -38,13 +38,13 @@ export interface GetBotApi {
 }
 
 export interface UpdateBotApi {
-  id?: number;
+  id: number;
   ruleIds?: number[];
   lastUpdateId?: number;
 }
 
 export interface FilterBotApi {
-  id?: number;
-  username?: string;
+  ids?: number[];
+  usernames?: string[];
   ruleIds?: number[];
 }

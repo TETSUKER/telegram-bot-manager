@@ -1,10 +1,23 @@
 import { diContainer } from 'app/core/di-container';
+import { Logger } from 'app/core/logger';
 import { TelegramHttpsApi } from 'app/core/telegram-https-api';
 import { ExternalApiError } from 'app/errors/external-api.error';
-import { GetUpdatesRequestBody, SendStickerRequestBody, SendTextMessageRequestBody, SetMessageReactionRequestBody, TelegramMessage, TelegramUpdate, TelegramUser } from 'app/interfaces/telegram-api.interfaces';
+import { RuleResponse } from 'app/interfaces/rule.interfaces';
+import {
+  GetUpdatesRequestBody,
+  SendStickerRequestBody,
+  SendTextMessageRequestBody,
+  SetMessageReactionRequestBody,
+  TelegramMessage,
+  TelegramUpdate,
+  TelegramUser,
+} from 'app/interfaces/telegram-api.interfaces';
 
 export class TelegramService {
-  constructor(private telegramHttpsApi: TelegramHttpsApi) {}
+  constructor(
+    private telegramHttpsApi: TelegramHttpsApi,
+    private logger: Logger,
+  ) {}
 
   public async getBotInfo(botToken: string): Promise<TelegramUser> {
     try {
@@ -20,7 +33,12 @@ export class TelegramService {
       text,
       reply_to_message_id
     };
-    return await this.telegramHttpsApi.callApi('sendMessage', botToken, body);
+
+    try {
+      return await this.telegramHttpsApi.callApi('sendMessage', botToken, body);
+    } catch(err) {
+      throw `Error then sending text meessage: ${JSON.stringify(err)}`;
+    }
   }
 
   public async sendSticker(botToken: string, chatId: number, stickerId: string, reply_to_message_id?: number | undefined): Promise<TelegramMessage> {
@@ -45,6 +63,23 @@ export class TelegramService {
     const body: GetUpdatesRequestBody = { offset, timeout };
     return await this.telegramHttpsApi.callApi('getUpdates', botToken, body);
   }
+
+  public async sendMessageResponse(response: RuleResponse, token: string, chatId: number, message_id?: number): Promise<void> {
+    if (response.type === 'message') {
+      await this.sendTextMessage(token, chatId, response.text, response.reply ? message_id : undefined);
+    }
+
+    if (response.type === 'sticker') {
+      await this.sendSticker(token, chatId, response.stickerId, response.reply ? message_id : undefined);
+    }
+
+    if (response.type === 'emoji' && message_id) {
+      await this.setMessageReaction(token, chatId, message_id, response.emoji);
+    }
+  }
 }
 
-diContainer.registerDependencies(TelegramService, [TelegramHttpsApi]);
+diContainer.registerDependencies(TelegramService, [
+  TelegramHttpsApi,
+  Logger,
+]);

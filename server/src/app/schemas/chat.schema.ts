@@ -2,9 +2,8 @@ import { FilterChatApi, NewChatApi, UpdateChatApi } from 'app/interfaces/chat.in
 import { z, ZodType } from 'zod';
 
 export const FilterChatSchema = z.object({
-  id: z.number().optional(),
-  chatId: z.string().optional(),
-  name: z.string().optional(),
+  ids: z.array(z.number()).optional(),
+  names: z.array(z.string()).optional(),
 }) satisfies ZodType<FilterChatApi>;
 
 export const NewChatSchema = z.object({
@@ -14,6 +13,6 @@ export const NewChatSchema = z.object({
 
 export const UpdateChatSchema = z.object({
   id: z.number(),
-  chatId: z.string(),
-  name: z.string(),
+  chatId: z.string().optional(),
+  name: z.string().optional(),
 }) satisfies ZodType<UpdateChatApi>;

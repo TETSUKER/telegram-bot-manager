@@ -11,7 +11,7 @@ export const UpdateBotSchema = z.object({
 }) satisfies ZodType<UpdateBotApi>;
 
 export const FilterBotSchema = z.object({
-  id: z.number().optional(),
-  username: z.string().optional(),
+  ids: z.array(z.number()).optional(),
+  usernames: z.array(z.string()).optional(),
   ruleIds: z.array(z.number()).min(1).optional(),
 }) satisfies ZodType<FilterBotApi>;

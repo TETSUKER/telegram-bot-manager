@@ -1,41 +1,50 @@
 import { diContainer } from 'app/core/di-container';
 import { TelegramService } from './telegram.service';
-import { RulesModel } from 'app/models/rules.model';
-import { RuleResponse, RuleCondition, Rule } from 'app/interfaces/rule.interfaces';
+import { Rule, RuleCondition } from 'app/interfaces/rule.interfaces';
 import { TelegramUpdate } from 'app/interfaces/telegram-api.interfaces';
-import { GetBotApi } from 'app/interfaces/bot.interfaces';
-import { BotModel } from 'app/models/bot.model';
+import { Bot } from 'app/interfaces/bot.interfaces';
 import { Logger } from 'app/core/logger';
+import { EventBus } from 'app/core/event-bus';
+import { EventName } from 'app/interfaces/event-bus.interfaces';
+import { RulesService } from './rules.service';
+import { BotsService } from './bots.service';
 
 export class UpdatesService {
-  private cachedBots: GetBotApi[] = [];
-  private messageRules: Rule[] = [];
+  private bots = new Map<number, Bot>();
+  private rules: Rule[] = [];
 
   constructor(
     private telegramService: TelegramService,
-    private botModel: BotModel,
-    private rulesModel: RulesModel,
     private logger: Logger,
+    private eventBus: EventBus,
+    private rulesService: RulesService,
+    private botsService: BotsService,
   ) {
-    this.updateCachedBots();
-    this.updateCachedMessageRules();
+    this.cacheBots();
+    this.cacheRules();
+    this.eventBus.subscribe(EventName.bot_added, bot => {
+      this.bots.set(bot.id, bot);
+    });
+    this.eventBus.subscribe(EventName.bot_removed, id => {
+      this.bots.delete(id);
+    });
   }
 
-  public async updateCachedBots(): Promise<void> {
-    const dbBots = await this.botModel.getBots({});
-    const newBots = dbBots.filter(dbBot => !this.cachedBots.map(bot => bot.id).includes(dbBot.id));
-    this.cachedBots = dbBots;
-    for (const newBot of newBots) {
-      this.pollBotUpdates(newBot.id);
+  private async cacheBots(): Promise<void> {
+    const bots = await this.botsService.getBots({});
+    for (const bot of bots) {
+      this.bots.set(bot.id, bot);
+      this.pollBotUpdates(bot.id);
     }
   }
 
-  public async updateCachedMessageRules(): Promise<void> {
-    this.messageRules = await this.rulesModel.getRules({});
+  private async cacheRules(): Promise<void> {
+    const rules = await this.rulesService.getRules({});
+    this.rules = rules;
   }
 
   private async pollBotUpdates(botId: number): Promise<void> {
-    let bot = this.getCachedBotById(botId);
+    let bot = this.bots.get(botId);
 
     while(bot) {
       try {
@@ -43,12 +52,11 @@ export class UpdatesService {
 
         if (Array.isArray(updates) && updates.length > 0) {
           for (const update of updates) {
-            // console.log(update);
+            this.logger.infoLog(`Bot: ${bot.username} recieve update: ${JSON.stringify(update)}`);
             await this.handleUpdate(update, bot);
           }
         }
-        await this.updateCachedBots();
-        bot = this.getCachedBotById(botId);
+        bot = this.bots.get(botId);
       } catch(err) {
         this.logger.errorLog(`UpdatesService error: ${err}`);
         await this.delay(5000);
@@ -56,31 +64,31 @@ export class UpdatesService {
     }
   }
 
-  private getCachedBotById(botId: number): GetBotApi | undefined {
-    return this.cachedBots.find(bot => bot.id === botId);
-  }
-
-  private async handleUpdate(update: TelegramUpdate, bot: GetBotApi): Promise<void> {
-    const messageRules = this.messageRules.filter(handler => bot.ruleIds.includes(handler.id));
+  private async handleUpdate(update: TelegramUpdate, bot: Bot): Promise<void> {
+    const messageRules = this.rules.filter(rule => bot.ruleIds.includes(rule.id));
     const message = update.message?.text;
 
     if (message && messageRules.length) {
       for (const rule of messageRules) {
         if (this.isMessageMatchRule(rule.condition, message)) {
-          await this.sendMessageResponse(rule.response, update, bot);
+          const chatId = Number(update.message?.chat.id);
+          const messageId = update.message?.message_id;
+          await this.telegramService.sendMessageResponse(rule.response, bot.token, chatId, messageId);
         }
       }
     }
 
-    this.botModel.updateBot({...bot, lastUpdateId: update.update_id});
-    await this.updateCachedBots();
+    const updatedBot = await this.botsService.updateBot({...bot, lastUpdateId: update.update_id});
+    if (updatedBot && this.bots.has(updatedBot.id)) {
+      this.bots.set(updatedBot.id, updatedBot);
+    }
   }
 
   private isMessageMatchRule(messageCondition: RuleCondition, message: string): boolean {
     if (messageCondition.type === 'regex') {
       return new RegExp(messageCondition.pattern).test(message);
     }
-
+  
     if (messageCondition.type === 'length') {
       switch(messageCondition.operator) {
         case '<': return message.length < messageCondition.value;
@@ -90,28 +98,12 @@ export class UpdatesService {
         case '=': return message.length === messageCondition.value;
       }
     }
-
+  
     if (messageCondition.type === 'command') {
       return message.match(/^\/[a-z]*/)?.[0] === messageCondition.name;
     }
-
+  
     return false;
-  }
-
-  private async sendMessageResponse(response: RuleResponse, update: TelegramUpdate, bot: GetBotApi): Promise<void> {
-    const chatId = Number(update.message?.chat.id);
-
-    if (response.type === 'message') {
-      await this.telegramService.sendTextMessage(bot.token, chatId, response.text, response.reply ? update.message?.message_id : undefined);
-    }
-
-    if (response.type === 'sticker') {
-      await this.telegramService.sendSticker(bot.token, chatId, response.stickerId, response.reply ? update.message?.message_id : undefined);
-    }
-
-    if (response.type === 'emoji' && update.message?.message_id) {
-      await this.telegramService.setMessageReaction(bot.token, chatId, update.message.message_id, response.emoji);
-    }
   }
 
   private delay(ms: number): Promise<void> {
@@ -121,7 +113,8 @@ export class UpdatesService {
 
 diContainer.registerDependencies(UpdatesService, [
   TelegramService,
-  BotModel,
-  RulesModel,
   Logger,
+  EventBus,
+  RulesService,
+  BotsService,
 ]);
