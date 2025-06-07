@@ -100,7 +100,7 @@ export class RulesModel {
   }
 
   public async addRule(newRule: NewRule): Promise<Rule | null> {
-    const [rule] = await this.postgres.selectFromTable<DbRule>('rules', [], [{
+    const [rule] = await this.postgres.selectFromTable<DbRule, DbRule>('rules', [], [{
       columnName: 'name',
       value: newRule.name,
       type: 'string',
@@ -112,7 +112,7 @@ export class RulesModel {
 
     const dbRule = this.convertToDbRule(newRule);
     try {
-      const { rows } = await this.postgres.insertInTable<NewDbRule>('rules', dbRule);
+      const { rows } = await this.postgres.insertInTable<NewDbRule, DbRule>('rules', dbRule);
       const [ convertedRule ] = this.convertFromDbRules(rows);
       return convertedRule ?? null;
     } catch {
@@ -133,7 +133,7 @@ export class RulesModel {
   public async getRules(filter: FilterRuleApi): Promise<Rule[]> {
     const conditions = this.getConditionsFromFilter(filter);
     try {
-      const rules = await this.postgres.selectFromTable<DbRule>('rules', [], conditions);
+      const rules = await this.postgres.selectFromTable<DbRule, DbRule>('rules', [], conditions);
       return this.convertFromDbRules(rules);
     } catch {
       throw new ServerApiError('Error get rules');
@@ -215,9 +215,27 @@ export class RulesModel {
       };
     }
 
+    if (dbRule.response_type === 'emoji') {
+      return {
+        type: 'emoji',
+        emoji: dbRule.response_emoji,
+      };
+    }
+
+    if (dbRule.response_type === 'random_joke') {
+      return {
+        type: 'random_joke',
+      };
+    }
+
+    if (dbRule.response_type === 'find_joke') {
+      return {
+        type: 'find_joke',
+      };
+    }
+
     return {
-      type: 'emoji',
-      emoji: dbRule.response_emoji,
+      type: 'joke_rating',
     };
   }
 
@@ -280,18 +298,18 @@ export class RulesModel {
   }
 
   public async removeRules(ids: number[]): Promise<Rule[]> {
-    const { rows } = await this.postgres.deleteFromTableByIds('rules', ids);
+    const { rows } = await this.postgres.deleteFromTableByIds<DbRule>('rules', ids);
     return this.convertFromDbRules(rows);
   }
 
   public async updateRule(rule: UpdateRuleApi): Promise<Rule | null> {
-    const [dbRule] = await this.postgres.selectFromTable<DbRule>('rules', [], [{ columnName: 'id', value: rule.id, type: 'number', operation: '=' }]);
+    const [dbRule] = await this.postgres.selectFromTable<DbRule, DbRule>('rules', [], [{ columnName: 'id', value: rule.id, type: 'number', operation: '=' }]);
     if (!dbRule) {
       throw new NotFoundError(`Rule with id: ${rule.id} not found`);
     }
 
     const updatedDbRule = this.convertToUpdateModelRule(rule);
-    const { rows } = await this.postgres.updateTable<UpdateDbRule>('rules', rule.id, updatedDbRule);
+    const { rows } = await this.postgres.updateTable<UpdateDbRule, DbRule>('rules', rule.id, updatedDbRule);
     const [ updatedRule ] = this.convertFromDbRules(rows);
     return updatedRule ?? null;
   }
@@ -422,9 +440,27 @@ export class RulesModel {
       };
     }
 
+    if (newRule.response.type === 'emoji') {
+      return {
+        response_type: 'emoji',
+        response_emoji: newRule.response.emoji,
+      };
+    }
+
+    if (newRule.response.type === 'random_joke') {
+      return {
+        response_type: 'random_joke',
+      };
+    }
+
+    if (newRule.response.type === 'find_joke') {
+      return {
+        response_type: 'find_joke',
+      };
+    }
+
     return {
-      response_type: 'emoji',
-      response_emoji: newRule.response.emoji,
+      response_type: 'joke_rating',
     };
   }
 }

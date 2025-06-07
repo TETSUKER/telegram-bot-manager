@@ -2,13 +2,13 @@ import { diContainer } from 'app/core/di-container';
 import { EventBus } from 'app/core/event-bus';
 import { Logger } from 'app/core/logger';
 import { EventName } from 'app/interfaces/event-bus.interfaces';
-import { DayOfWeek, Rule } from 'app/interfaces/rule.interfaces';
+import { DayOfWeek, Rule, RuleResponse } from 'app/interfaces/rule.interfaces';
 import schedule, { Job, RecurrenceRule } from 'node-schedule';
 import { RulesService } from './rules.service';
 import { BotsService } from './bots.service';
 import { ChatsService } from './chats.service';
 import { Bot } from 'app/interfaces/bot.interfaces';
-import { TelegramService } from './telegram.service';
+import { MessageResponseService } from './message-response.service';
 
 export class ScheduleMessagesService {
   private jobs = new Map<string, Job>();
@@ -19,7 +19,7 @@ export class ScheduleMessagesService {
     private eventBus: EventBus,
     private botsService: BotsService,
     private chatsService: ChatsService,
-    private telegramService: TelegramService,
+    private messageResponseService: MessageResponseService,
   ) {
     this.eventBus.subscribe(EventName.added_rules_to_bot, async ({ ruleIds, botId }) => {
       const rules = await this.rulesService.getRules({ ids: ruleIds });
@@ -31,7 +31,7 @@ export class ScheduleMessagesService {
         }
       }
     });
-    this.eventBus.subscribe(EventName.removed_rules_from_bot, async ({ ruleIds, botId }) => {
+    this.eventBus.subscribe(EventName.removed_rules_from_bot, ({ ruleIds, botId }) => {
       for (const ruleId of ruleIds) {
         const jobId = this.getJobId(ruleId, botId);
         this.cancelScheduledMessage(jobId);
@@ -62,15 +62,15 @@ export class ScheduleMessagesService {
   }
 
   private scheduleMessage(rule: Rule, bot: Bot): void {
-    const scheduleRule = this.getScheduleRule(rule);
     if (rule.condition.type === 'schedule' && rule.condition.scheduleChatIds.length) {
+      const scheduleRule = this.getScheduleRule(rule);
       const job = schedule.scheduleJob(scheduleRule, async () => {
         if (rule.condition.type === 'schedule') {
           const chats = await this.chatsService.getChats({ ids: rule.condition.scheduleChatIds });
           for (const chat of chats) {
             const chatId = Number(chat?.chatId);
             try {
-              await this.telegramService.sendMessageResponse(rule.response, bot.token, chatId);
+              await this.sendMessageResponse(rule.response, bot.token, chatId);
             } catch(err) {
               this.logger.errorLog(`Error then send schedule message: ${JSON.stringify(err)}`);
             }
@@ -79,10 +79,24 @@ export class ScheduleMessagesService {
           this.logger.errorLog(`Rule: ${rule.name} with not schedule condition type: ${rule.condition.type}`);
         }
       });
-  
+
       const jobId = this.getJobId(rule.id, bot.id);
       this.jobs.set(jobId, job);
       this.logger.infoLog(`Job with id: ${jobId} scheduled on time: ${job.nextInvocation()}`);
+    }
+  }
+
+  private async sendMessageResponse(response: RuleResponse, botToken: string, chatId: number): Promise<void> {
+    if (response.type === 'message') {
+      await this.messageResponseService.sendTextMessage(botToken, chatId, response.text);
+    }
+
+    if (response.type === 'sticker') {
+      await this.messageResponseService.sendStickerMessage(botToken, chatId, response.stickerId);
+    }
+
+    if (response.type === 'random_joke') {
+      await this.messageResponseService.sendRandomJoke(botToken, chatId);
     }
   }
 
@@ -101,7 +115,7 @@ export class ScheduleMessagesService {
       scheduleRule.hour = rule.condition.schedule.hour;
       scheduleRule.minute = rule.condition.schedule.minute;
     }
-    console.log('scheduleRule: ', JSON.stringify(scheduleRule));
+
     return scheduleRule;
   }
 
@@ -142,5 +156,5 @@ diContainer.registerDependencies(ScheduleMessagesService, [
   EventBus,
   BotsService,
   ChatsService,
-  TelegramService,
+  MessageResponseService,
 ]);

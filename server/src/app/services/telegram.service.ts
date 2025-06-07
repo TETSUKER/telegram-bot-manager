@@ -2,9 +2,12 @@ import { diContainer } from 'app/core/di-container';
 import { Logger } from 'app/core/logger';
 import { TelegramHttpsApi } from 'app/core/telegram-https-api';
 import { ExternalApiError } from 'app/errors/external-api.error';
-import { RuleResponse } from 'app/interfaces/rule.interfaces';
+import { ServerApiError } from 'app/errors/server.error';
 import {
+  EditMessageTextRequestBody,
   GetUpdatesRequestBody,
+  ReplyMarkup,
+  SendMessageWithMarkupRequestBody,
   SendStickerRequestBody,
   SendTextMessageRequestBody,
   SetMessageReactionRequestBody,
@@ -27,7 +30,7 @@ export class TelegramService {
     }
   }
 
-  public async sendTextMessage(botToken: string, chatId: number, text: string, reply_to_message_id?: number | undefined): Promise<TelegramMessage> {
+  public async sendTextMessage(botToken: string, chatId: number, text: string, reply_to_message_id?: number): Promise<TelegramMessage> {
     const body: SendTextMessageRequestBody = {
       chat_id: chatId,
       text,
@@ -37,11 +40,11 @@ export class TelegramService {
     try {
       return await this.telegramHttpsApi.callApi('sendMessage', botToken, body);
     } catch(err) {
-      throw `Error then sending text meessage: ${JSON.stringify(err)}`;
+      throw new ServerApiError(`Error then sending text meessage: ${JSON.stringify(err)}`);
     }
   }
 
-  public async sendSticker(botToken: string, chatId: number, stickerId: string, reply_to_message_id?: number | undefined): Promise<TelegramMessage> {
+  public async sendSticker(botToken: string, chatId: number, stickerId: string, reply_to_message_id?: number): Promise<TelegramMessage> {
     const body: SendStickerRequestBody = {
       chat_id: chatId,
       sticker: stickerId,
@@ -64,17 +67,47 @@ export class TelegramService {
     return await this.telegramHttpsApi.callApi('getUpdates', botToken, body);
   }
 
-  public async sendMessageResponse(response: RuleResponse, token: string, chatId: number, message_id?: number): Promise<void> {
-    if (response.type === 'message') {
-      await this.sendTextMessage(token, chatId, response.text, response.reply ? message_id : undefined);
-    }
+  public async sendMessageWithMarkup(botToken: string, chatId: number, text: string, replyMarkup: ReplyMarkup): Promise<TelegramMessage> {
+    const body: SendMessageWithMarkupRequestBody = {
+      chat_id: chatId,
+      text,
+      reply_markup: replyMarkup,
+    };
 
-    if (response.type === 'sticker') {
-      await this.sendSticker(token, chatId, response.stickerId, response.reply ? message_id : undefined);
+    try {
+      return await this.telegramHttpsApi.callApi('sendMessage', botToken, body);
+    } catch(err) {
+      throw new ServerApiError(`Error then sending meessage with reply markup: ${JSON.stringify(err)}`);
     }
+  }
 
-    if (response.type === 'emoji' && message_id) {
-      await this.setMessageReaction(token, chatId, message_id, response.emoji);
+  public async editMessageText(botToken: string, chatId: number, messageId: number, text: string, replyMarkup: ReplyMarkup): Promise<TelegramMessage> {
+    const body: EditMessageTextRequestBody = {
+      chat_id: chatId,
+      message_id: messageId,
+      text,
+      reply_markup: replyMarkup,
+    };
+
+    try {
+      return await this.telegramHttpsApi.callApi('editMessageText', botToken, body);
+    } catch(err) {
+      const methodName = this.editMessageText.name;
+      this.logger.errorLog(`Error while ${methodName}: ${JSON.stringify(err)}`);
+      throw new ServerApiError(`Error then edit message text: ${JSON.stringify(err)}`);
+    }
+  }
+
+  public async answerCallbackQuery(botToken: string, callback_query_id: string, text: string): Promise<TelegramMessage> {
+    const body = {
+      callback_query_id,
+      text,
+    };
+
+    try {
+      return await this.telegramHttpsApi.callApi('answerCallbackQuery', botToken, body);
+    } catch(err) {
+      throw new ServerApiError(`Error then answer callback query: ${JSON.stringify(err)}`);
     }
   }
 }

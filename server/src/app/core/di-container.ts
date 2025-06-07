@@ -8,6 +8,13 @@ class DIContainer {
     if (this.dependencies.has(type)) {
       throw new Error(`Dependency ${type.name} already registered`);
     }
+    if (type.length > deps.length) {
+      throw new Error(`Dependency ${type.name} has more dependencies`);
+    }
+    if (type.length < deps.length) {
+      throw new Error(`Dependency ${type.name} has less dependencies`);
+    }
+
     this.dependencies.set(type, deps);
   }
 
@@ -19,6 +26,7 @@ class DIContainer {
     if (!this.instances.has(type)) {
       const deps = this.dependencies.get(type) || [];
       const instances = deps.map(dep => this.get(dep));
+
       this.instances.set(type, new type(...instances));
     }
 

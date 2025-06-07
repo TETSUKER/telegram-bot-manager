@@ -1,7 +1,7 @@
 import { diContainer } from './di-container';
 import { Dotenv } from './dotenv';
 import { Logger } from './logger';
-import { Client, QueryResult } from 'pg';
+import { Client, QueryResultRow, QueryResult } from 'pg';
 import { Column, Condition, LogicalOperator, TableName } from 'app/interfaces/postgres.interfaces';
 
 export class Postgres {
@@ -15,11 +15,11 @@ export class Postgres {
     this.closeConnectToDbOnSigterm();
   }
 
-  public async selectFromTable<T>(tableName: TableName, columns?: (keyof T)[], conditions?: Condition<T>[], logicOperator?: LogicalOperator): Promise<T[]> {
+  public async selectFromTable<T, R extends QueryResultRow = any>(tableName: TableName, columns?: (keyof T)[], conditions?: Condition<T>[], logicOperator?: LogicalOperator): Promise<R[]> {
     const select = columns?.length ? columns.join(',') : '*';
     const queryConditions = conditions?.length ? `where ${conditions.map(condition => {
       if (condition.type === 'string') {
-        return `"${String(condition.columnName)}" ${condition.exactMatch ? '=' : 'like'} '${condition.value}'`;
+        return `"${String(condition.columnName)}" ${condition.exactMatch ? '=' : 'like'} '%${condition.value}%'`;
       }
       if (condition.type === 'json') {
         return `${String(condition.columnName)}::jsonb @> '[${condition.value}]'`;
@@ -31,7 +31,7 @@ export class Postgres {
         return `${String(condition.columnName)} = ${condition.value ? 'true' : 'false'}`;
       }
       if (condition.type === 'array' && condition.values.length) {
-        return `${String(condition.columnName)} && array[${condition.values.join(',')}]`;
+        return `${condition?.exclude ? 'not' : ''} ${String(condition.columnName)} && array[${condition.values.map(key => typeof key === 'number' ? key :`'${key}'`).join(',')}]`;
       }
     }).join(` ${logicOperator ? logicOperator : 'or'} `)}` : '';
     const query = `select ${select} from ${tableName} ${queryConditions}`;
@@ -39,19 +39,19 @@ export class Postgres {
     try {
       this.logger.infoLog(`Select from ${tableName} query: ${query}`);
       const { rows } = await this.client.query(query);
-      return rows;
+      return rows as R[];
     } catch(err) {
-      this.logger.errorLog(`Select from ${tableName} error: ${err}`);
+      this.logger.errorLog(`Select from ${tableName} error: ${JSON.stringify(err)}`);
       throw err;
     }
   }
 
-  public async insertInTable<T>(tableName: TableName, object: {[Key in keyof T]: T[Key]}): Promise<QueryResult> {
+  public async insertInTable<T, R extends QueryResultRow = any>(tableName: TableName, object: {[Key in keyof T]: T[Key]}): Promise<QueryResult<R>> {
     const columns = Object.keys(object).map(key => `"${key}"`).join(', ');
     const values = Object.keys(object).map(key => {
       const isArray = Array.isArray(object[key as keyof T]);
       if (typeof object[key as keyof T] === 'string') {
-        return `${object[key as keyof T]}`;
+        return object[key as keyof T];
       }
       if (isArray) {
         return `{${(object[key as keyof T] as []).join(',')}}`;
@@ -72,11 +72,11 @@ export class Postgres {
     }
   }
 
-  public async updateTable<T>(tableName: TableName, id: number, object: {[Key in keyof T]: T[Key]}): Promise<any> {
+  public async updateTable<T, R extends QueryResultRow = any>(tableName: TableName, id: number, object: {[Key in keyof T]: T[Key]}): Promise<QueryResult<R>> {
     const columns = Object.keys(object).map((key, index) => `"${key}" = $${index + 1}`).join(', ');
     const values = Object.keys(object).map(key => {
       if (typeof object[key as keyof T] === 'string') {
-        return `${object[key as keyof T]}`;
+        return object[key as keyof T];
       }
       const isArray = Array.isArray(object[key as keyof T]);
       if (isArray) {
@@ -96,12 +96,12 @@ export class Postgres {
       this.logger.infoLog(`Update ${tableName} query: "${query}"\n${JSON.stringify(values)}`);
       return await this.client.query(query, values);
     } catch(err) {
-      this.logger.errorLog(`Update ${tableName} error: ${err}`);
+      this.logger.errorLog(`Update ${tableName} error: ${JSON.stringify(err)}`);
       throw err;
     }
   }
 
-  public async deleteFromTableByIds(tableName: TableName, ids: number[]): Promise<QueryResult> {
+  public async deleteFromTableByIds<R extends QueryResultRow = any>(tableName: TableName, ids: number[]): Promise<QueryResult<R>> {
     const query = `delete from ${tableName} where id IN (${ids.join(', ')}) returning *`;
 
     try {
@@ -132,6 +132,18 @@ export class Postgres {
     }
   }
 
+  // Костыль для запросов с кастомной сортировкой
+  // типа: SUM(CASE WHEN is_like THEN 1 ELSE -1 END)
+  public async customQuery<R extends QueryResultRow = any>(query: string): Promise<QueryResult<R>> {
+    try {
+      this.logger.infoLog(`${this.customQuery.name}: ${query}`);
+      return await this.client.query(query);
+    } catch(err) {
+      this.logger.errorLog(`Error while call ${this.customQuery.name}: ${JSON.stringify(err)}`);
+      throw err;
+    }
+  }
+
   private getClient(): Client {
     const host = this.dotenv.environments.HOST;
     const db_port = Number(this.dotenv.environments.PG_PORT);
@@ -158,9 +170,10 @@ export class Postgres {
   }
 
   private closeConnectToDbOnSigterm(): void {
-    process.on('SIGTERM', async () => {
-      await this.client.end();
-      process.exit(0);
+    process.on('SIGTERM', () => {
+      this.client.end()
+        .then(() => process.exit(0))
+        .catch(() => process.exit(1));
     });
   }
 }

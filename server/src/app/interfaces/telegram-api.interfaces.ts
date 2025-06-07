@@ -4,6 +4,8 @@ export type TelegramApiMethod =
   | 'getMe'
   | 'sendSticker'
   | 'setMessageReaction'
+  | 'editMessageText'
+  | 'answerCallbackQuery'
 
 export type TelegramMessageEntityType =
   'mention' |
@@ -149,10 +151,21 @@ export interface TelegramChatMemberUpdated {
   new_chat_member: TelegramChatMember;
 }
 
+export interface TelegramCallbackQuery {
+  id: string;
+  from: TelegramUser;
+  message?: TelegramMessage; // На самом деле должен быть тип MaybeInaccessibleMessage
+  inline_message_id?: string;
+  chat_instance?: string;
+  data?: string;
+  game_short_name?: string;
+}
+
 export interface TelegramUpdate {
   update_id: number;
   message?: TelegramMessage;
   my_chat_member?: TelegramChatMemberUpdated;
+  callback_query?: TelegramCallbackQuery;
 }
 
 export interface TelegramApiResponse<T> {
@@ -166,6 +179,26 @@ export interface SendTextMessageRequestBody {
   chat_id: number;
   text: string;
   reply_to_message_id?: number;
+}
+
+export interface ReplyMarkup {
+  inline_keyboard: {
+    text: string;
+    callback_data: string;
+  }[][];
+}
+
+export interface SendMessageWithMarkupRequestBody {
+  chat_id: number;
+  text: string;
+  reply_markup: ReplyMarkup;
+}
+
+export interface EditMessageTextRequestBody {
+  chat_id: number;
+  message_id: number;
+  text: string;
+  reply_markup?: ReplyMarkup;
 }
 
 export interface SendStickerRequestBody {

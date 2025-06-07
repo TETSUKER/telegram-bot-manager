@@ -54,7 +54,16 @@ const MessageResponseSchema: ZodType<RuleResponse> = z.union([
   z.object({
     type: z.literal('emoji'),
     emoji: z.string().min(1).max(100),
-  })
+  }),
+  z.object({
+    type: z.literal('random_joke'),
+  }),
+  z.object({
+    type: z.literal('find_joke'),
+  }),
+  z.object({
+    type: z.literal('joke_rating'),
+  }),
 ]);
 
 export const NewRuleSchema = z.object({
@@ -72,7 +81,7 @@ export const FilterRuleSchema = z.object({
   ids: z.array(z.number()).optional(),
   names: z.array(z.string()).optional(),
   conditionType: z.array(z.enum(['regex', 'length', 'command'])).optional(),
-  responseType: z.array(z.enum(['message', 'sticker', 'emoji'])).optional(),
+  responseType: z.array(z.enum(['message', 'sticker', 'emoji', 'joke'])).optional(),
   scheduleChatIds: z.array(z.number()).optional(),
 }) satisfies ZodType<FilterRuleApi>;
 

@@ -37,7 +37,7 @@ export class ChatsModel {
     const conditions = this.getConditionsFromFilter(filter);
 
     try {
-      const chats = await this.postgres.selectFromTable<DbChat>('chats', [], conditions);
+      const chats = await this.postgres.selectFromTable<DbChat, DbChat>('chats', [], conditions);
       return this.convertFromDbChat(chats);
     } catch(err) {
       this.logger.errorLog(`Error while get chats: ${err}`);
@@ -90,12 +90,12 @@ export class ChatsModel {
   }
 
   public async removeChat(ids: number[]): Promise<Chat[]> {
-    const { rows } = await this.postgres.deleteFromTableByIds('chats', ids);
+    const { rows } = await this.postgres.deleteFromTableByIds<DbChat>('chats', ids);
     return this.convertFromDbChat(rows);
   }
 
   public async updateChat(chat: UpdateChatApi): Promise<void> {
-    const [dbChat] = await this.postgres.selectFromTable<DbChat>('chats', [], [{ columnName: 'id', value: chat.id, type: 'number', operation: '=' }]);
+    const [dbChat] = await this.postgres.selectFromTable<DbChat, DbChat>('chats', [], [{ columnName: 'id', value: chat.id, type: 'number', operation: '=' }]);
     if (!dbChat) {
       throw new NotFoundError(`Chat with id: ${chat.id} not found`);
     }

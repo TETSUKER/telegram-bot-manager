@@ -15,6 +15,7 @@ export type RuleResponse =
   | { type: 'message', text: string, reply: boolean }
   | { type: 'sticker', stickerId: string, reply: boolean }
   | { type: 'emoji', emoji: string }
+  | { type: 'random_joke' | 'find_joke' | 'joke_rating' }
 
 export interface NewRule {
   name: string;
@@ -35,7 +36,7 @@ export interface FilterRuleApi {
   ids?: number[];
   names?: string[];
   conditionTypes?: ('regex' | 'length' | 'command' | 'schedule')[];
-  responseTypes?: ('message' | 'sticker' | 'emoji')[];
+  responseTypes?: ('message' | 'sticker' | 'emoji' | 'joke')[];
   scheduleChatIds?: number[];
 }
 
@@ -95,7 +96,11 @@ interface EmojiResponseDbRule {
   response_emoji: string;
 }
 
-export type ResponseDbRule = MessageResponseDbRule | StickerResponseDbRule | EmojiResponseDbRule;
+interface JokeResponseDbRule {
+  response_type: 'random_joke' | 'find_joke' | 'joke_rating';
+}
+
+export type ResponseDbRule = MessageResponseDbRule | StickerResponseDbRule | EmojiResponseDbRule | JokeResponseDbRule;
 
 export interface BaseDbRule {
   date_added: Date;

@@ -56,11 +56,11 @@ export class RulesService {
     }
   }
 
-  public async updateRule(messageRule: UpdateRuleApi): Promise<void> {
-    const updatedRule = await this.rulesModel.updateRule(messageRule);
+  public async updateRule(updateRule: UpdateRuleApi): Promise<void> {
+    const updatedRule = await this.rulesModel.updateRule(updateRule);
 
     if (updatedRule) {
-      const bots = await this.botsService.getBots({ ruleIds: [messageRule.id] });
+      const bots = await this.botsService.getBots({ ruleIds: [updateRule.id] });
       this.publishUpdatedRuleInBots(bots, updatedRule);
     }
   }

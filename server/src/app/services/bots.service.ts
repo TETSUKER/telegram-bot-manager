@@ -51,10 +51,10 @@ export class BotsService {
   public async removeBot(botIds: number[]): Promise<void> {
     const oldBots = await this.getBots({ ids: botIds });
     await this.botModel.removeBot(botIds);
-    await this.publishDeletedRulesFromBots(oldBots);
+    this.publishDeletedRulesFromBots(oldBots);
   }
 
-  private async publishDeletedRulesFromBots(bots: Bot[]): Promise<void> {
+  private publishDeletedRulesFromBots(bots: Bot[]): void {
     for (const bot of bots) {
       this.eventBus.publish(EventName.removed_rules_from_bot, { ruleIds: bot.ruleIds, botId: bot.id });
     }
@@ -65,13 +65,13 @@ export class BotsService {
     const newBot = await this.botModel.updateBot(updatedBot);
 
     if (oldBot && newBot) {
-      await this.publishChangedBotRules(oldBot, newBot);
+      this.publishChangedBotRules(oldBot, newBot);
     }
 
     return newBot;
   }
 
-  private async publishChangedBotRules(oldBot: Bot, newBot: Bot): Promise<void> {
+  private publishChangedBotRules(oldBot: Bot, newBot: Bot): void {
     const addedRuleIds = newBot.ruleIds?.filter(id => !oldBot.ruleIds?.includes(id)) ?? [];
     this.eventBus.publish(EventName.added_rules_to_bot, { ruleIds: addedRuleIds, botId: newBot.id });
 

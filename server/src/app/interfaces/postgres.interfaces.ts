@@ -20,6 +20,7 @@ export interface BooleanCondition {
 export interface ArrayCondition {
   values: unknown[];
   type: 'array';
+  exclude?: boolean;
 }
 
 export interface JsonCondition {
