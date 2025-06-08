@@ -1,7 +1,9 @@
 import './App.css';
 
 function App() {
-  return null;
+  return (
+    <div className='w-full h-screen bg-slate-950'></div>
+  );
 }
 
 export default App;
