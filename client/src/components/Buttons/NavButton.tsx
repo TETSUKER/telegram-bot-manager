@@ -1,6 +1,18 @@
 import React from "react";
 
-export function NavButton({ text, icon, active, onClick }) {
+type NavButtonProps = {
+  text: string;
+  icon: React.ReactNode;
+  active: boolean;
+  onClick: () => void;
+};
+
+export const NavButton: React.FC<NavButtonProps> = ({
+  text,
+  icon,
+  active,
+  onClick,
+}) => {
   return (
     <div
       onClick={onClick}
@@ -13,4 +25,4 @@ export function NavButton({ text, icon, active, onClick }) {
       <span className=" text-white text-base">{text}</span>
     </div>
   );
-}
+};

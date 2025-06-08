@@ -7,7 +7,7 @@ import {
 } from "@heroicons/react/outline";
 import { NavButton } from "./Buttons";
 
-export function Sidenav() {
+export const Sidenav: React.FC = () => {
   const [activeNav, setActiveNav] = React.useState("Bots");
 
   return (
@@ -55,4 +55,4 @@ export function Sidenav() {
       </div>
     </div>
   );
-}
+};
