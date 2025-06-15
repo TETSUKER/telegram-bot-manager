@@ -1,3 +1,5 @@
+import { baseUrl } from './baseUrl';
+
 export interface ServerChat {
   id: number;
   chatId: string;
@@ -6,7 +8,8 @@ export interface ServerChat {
 }
 
 export async function getChats(): Promise<ServerChat[]> {
-  const response = await fetch("http://localhost:3020/getChats", {
+  const path = baseUrl + '/getChats';
+  const response = await fetch(path, {
     method: "POST",
     body: JSON.stringify({}),
   });
