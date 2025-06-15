@@ -8,12 +8,16 @@ import { AddressInfo } from 'node:net';
 import { ApiError } from 'app/errors/api.error';
 import { Logger } from './logger';
 import { ServerApiError } from 'app/errors/server.error';
+import { Dotenv } from './dotenv';
 
 export class Http {
   private httpServer: Server;
   private routes: Routes = {};
 
-  constructor(private logger: Logger) {
+  constructor(
+    private logger: Logger,
+    private dotenv: Dotenv,
+  ) {
     this.httpServer = this.getServer();
   }
 
@@ -25,9 +29,9 @@ export class Http {
   }
 
   private setCors(response: ServerResponse): void {
-    const addressInfo = this.httpServer.address() as AddressInfo;
-    response.setHeader('Access-Control-Allow-Origin', `http://${addressInfo.address}:${3000}`); // Разрешаем запросы с любого origin
-    response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'); // Разрешаем методы
+    const host = this.dotenv.environments.HOST;
+    response.setHeader('Access-Control-Allow-Origin', `http://${host}:3000`);
+    response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   }
 
@@ -122,4 +126,7 @@ export class Http {
   }
 }
 
-diContainer.registerDependencies(Http, [Logger]);
+diContainer.registerDependencies(Http, [
+  Logger,
+  Dotenv,
+]);
