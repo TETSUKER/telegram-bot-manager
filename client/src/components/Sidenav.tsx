@@ -5,7 +5,7 @@ import {
   DocumentTextIcon,
   SpeakerphoneIcon,
 } from "@heroicons/react/outline";
-import { NavButton } from "./Buttons";
+import { NavButton } from "./Button";
 
 export const Sidenav: React.FC = () => {
   const [activeNav, setActiveNav] = React.useState("Bots");

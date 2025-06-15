@@ -19,8 +19,16 @@ export class Http {
 
   private getServer(): Server {
     return createServer((req: IncomingMessage, res: ServerResponse) => {
+      this.setCors(res);
       this.handleRequest(req as Request, res);
     });
+  }
+
+  private setCors(response: ServerResponse): void {
+    const addressInfo = this.httpServer.address() as AddressInfo;
+    response.setHeader('Access-Control-Allow-Origin', `http://${addressInfo.address}:${3000}`); // Разрешаем запросы с любого origin
+    response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'); // Разрешаем методы
+    response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   }
 
   private async handleRequest(req: Request, res: ServerResponse): Promise<void> {
