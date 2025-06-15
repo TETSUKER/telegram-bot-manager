@@ -6,7 +6,7 @@ export interface TableData<T> {
 }
 
 interface TableProps<T> {
-  tableData: TableData<T> | undefined;
+  tableData: TableData<T>;
 }
 
 type TableComponent<T = any> = React.FC<TableProps<T>>;
