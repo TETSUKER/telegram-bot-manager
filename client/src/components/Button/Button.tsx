@@ -53,7 +53,7 @@ function getBaseButtonStyle(type: ButtonType): string {
   if (type === "icon") {
     return `${baseStyles} p-[5px]`;
   } else {
-    return `${baseStyles} px-[16px] py-[8px] w-full`;
+    return `${baseStyles} px-[16px] py-[6px] w-full`;
   }
 }
 

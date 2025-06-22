@@ -1,2 +1,2 @@
-export * from './ChatsTable';
+export * from './Chat';
 export * from './Sidenav';
