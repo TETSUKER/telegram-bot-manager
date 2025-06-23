@@ -7,14 +7,14 @@ import {
   closeRemoveChatsModal,
   Status,
   removeChatsRequest,
-} from "store/removeChatsModalSlice";
+} from "store/chat/removeChatsModalSlice";
 
 export const RemoveChatsModal: React.FC = () => {
   const dispatch = useAppDispatch();
   const selectedChatIds = useAppSelector(
-    (state) => state.chatsTable.selectedIds
+    (state) => state.chat.chatsTable.selectedIds
   );
-  const removeChatModalState = useAppSelector((state) => state.removeChatModal);
+  const removeChatModalState = useAppSelector((state) => state.chat.removeChatModal);
 
   const isLoading = removeChatModalState.status === Status.LOADING;
 

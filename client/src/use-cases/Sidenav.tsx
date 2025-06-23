@@ -8,8 +8,21 @@ import {
 import { NavButton } from "../components/Button";
 import { Link } from "react-router-dom";
 
+enum NavLink {
+  logs = "logs",
+  bots = "bots",
+  chats = "chats",
+  rules = "rules",
+  jokes = "jokes",
+}
+
 export const Sidenav: React.FC = () => {
-  const [activeNav, setActiveNav] = React.useState("Bots");
+  const [activeNav, setActiveNav] = React.useState<NavLink>();
+
+  React.useEffect(() => {
+    const urlLink = window.location.pathname.slice(1) as NavLink;
+    setActiveNav(NavLink[urlLink] ?? null);
+  }, []);
 
   return (
     <div className="h-full w-80 flex flex-col items-start border-r border-slate-800">
@@ -21,52 +34,52 @@ export const Sidenav: React.FC = () => {
       <div className="w-full flex flex-col px-[10px] py-[20px] gap-y-[5px]">
         <Link to="/logs">
           <NavButton
-            onClick={() => setActiveNav("Logs")}
+            onClick={() => setActiveNav(NavLink.logs)}
             text="Logs"
             icon={
               <DocumentTextIcon className="size-6 text-white"></DocumentTextIcon>
             }
-            active={activeNav === "Logs"}
+            active={activeNav === NavLink.logs}
           ></NavButton>
         </Link>
 
         <Link to="/bots">
           <NavButton
-            onClick={() => setActiveNav("Bots")}
+            onClick={() => setActiveNav(NavLink.bots)}
             text="Bots"
             icon="🤖"
-            active={activeNav === "Bots"}
+            active={activeNav === NavLink.bots}
           ></NavButton>
         </Link>
 
         <Link to="/chats">
           <NavButton
-            onClick={() => setActiveNav("Chats")}
+            onClick={() => setActiveNav(NavLink.chats)}
             text="Chats"
             icon={
               <SpeakerphoneIcon className="size-6 text-white"></SpeakerphoneIcon>
             }
-            active={activeNav === "Chats"}
+            active={activeNav === NavLink.chats}
           ></NavButton>
         </Link>
 
         <Link to="/rules">
           <NavButton
-            onClick={() => setActiveNav("Rules")}
+            onClick={() => setActiveNav(NavLink.rules)}
             text="Rules"
             icon={
               <AnnotationIcon className="size-6 text-white"></AnnotationIcon>
             }
-            active={activeNav === "Rules"}
+            active={activeNav === NavLink.rules}
           ></NavButton>
         </Link>
 
         <Link to="/jokes">
           <NavButton
-            onClick={() => setActiveNav("Jokes")}
+            onClick={() => setActiveNav(NavLink.jokes)}
             text="Jokes"
             icon="😂"
-            active={activeNav === "Jokes"}
+            active={activeNav === NavLink.jokes}
           ></NavButton>
         </Link>
       </div>

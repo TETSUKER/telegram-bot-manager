@@ -3,14 +3,14 @@ import { Button, Modal, TextInput } from "components";
 import { XIcon } from "@heroicons/react/outline";
 import { useAppSelector } from 'hooks/useSelector';
 import { useAppDispatch } from 'hooks/useDispatch';
-import { Status } from 'store/addChatModalSlice';
-import { closeAddChatModal, addChatRequest } from 'store/addChatModalSlice';
+import { Status } from 'store/chat/addChatModalSlice';
+import { closeAddChatModal, addChatRequest } from 'store/chat/addChatModalSlice';
 
 export const AddChatModal: React.FC = () => {
   const [chatName, setChatName] = React.useState("");
   const [chatId, setChatId] = React.useState("");
 
-  const addChatModalState = useAppSelector((state) => state.addChatModal);
+  const addChatModalState = useAppSelector((state) => state.chat.addChatModal);
   const dispatch = useAppDispatch();
 
   const isLoading = addChatModalState.status === Status.LOADING;

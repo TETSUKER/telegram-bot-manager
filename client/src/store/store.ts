@@ -1,15 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { chatsTableSlice } from './chatsTableSlice';
-import { addChatModalSlice } from './addChatModalSlice';
-import { removeChatsModalSlice } from './removeChatsModalSlice';
-import { editChatModalSlice } from './editChatModalSlice';
+import chatReducer from "./chat";
 
 export const store = configureStore({
   reducer: {
-    chatsTable: chatsTableSlice.reducer,
-    addChatModal: addChatModalSlice.reducer,
-    removeChatModal: removeChatsModalSlice.reducer,
-    editChatModal: editChatModalSlice.reducer,
+    chat: chatReducer,
   },
 });
 

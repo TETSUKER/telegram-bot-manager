@@ -4,13 +4,13 @@ import { Button } from "components";
 import { PlusIcon, RefreshIcon, TrashIcon } from "@heroicons/react/outline";
 import { useAppSelector } from "hooks/useSelector";
 import { useAppDispatch } from "hooks/useDispatch";
-import { fetchChats, Status } from "store/chatsTableSlice";
-import { openAddChatModal } from "store/addChatModalSlice";
-import { openRemoveChatsModal } from "store/removeChatsModalSlice";
+import { fetchChats, Status } from "store/chat/chatsTableSlice";
+import { openAddChatModal } from "store/chat/addChatModalSlice";
+import { openRemoveChatsModal } from "store/chat/removeChatsModalSlice";
 
 export const Chats: React.FC = () => {
   const dispatch = useAppDispatch();
-  const chatsTableState = useAppSelector((state) => state.chatsTable);
+  const chatsTableState = useAppSelector((state) => state.chat.chatsTable);
 
   const refreshButtonLoading = chatsTableState.status === Status.LOADING;
   const addButtonDisabled = chatsTableState.status === Status.LOADING;

@@ -1,5 +1,5 @@
 import { Sidenav } from "./use-cases";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Logs, Bots, Chats, Rules, Jokes } from './pages';
 
 function App() {
@@ -13,6 +13,7 @@ function App() {
           <Route path="/chats" element={<Chats />} />
           <Route path="/rules" element={<Rules />} />
           <Route path="/jokes" element={<Jokes />} />
+          <Route path="*" element={<Navigate replace to="/logs" />} />
         </Routes>
       </div>
     </div>

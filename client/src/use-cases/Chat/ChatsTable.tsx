@@ -8,16 +8,16 @@ import {
 import { ServerChat } from "api/chat";
 import { useAppSelector } from "hooks/useSelector";
 import { useAppDispatch } from "hooks/useDispatch";
-import { fetchChats } from "store/chatsTableSlice";
-import { toggleSelectItem, toggleSelectAll } from "store/chatsTableSlice";
-import { openEditChatModal } from "store/editChatModalSlice";
+import { fetchChats } from "store/chat/chatsTableSlice";
+import { toggleSelectItem, toggleSelectAll } from "store/chat/chatsTableSlice";
+import { openEditChatModal } from "store/chat/editChatModalSlice";
 
 interface ChatTableRow extends ServerChat {
   checkbox: React.JSX.Element;
 }
 
 export const ChatsTable: React.FC = () => {
-  const chatsTableState = useAppSelector((state) => state.chatsTable);
+  const chatsTableState = useAppSelector((state) => state.chat.chatsTable);
   const dispatch = useAppDispatch();
   const headerCells = [
     <TableMasterCheckbox
@@ -63,7 +63,7 @@ export const ChatsTable: React.FC = () => {
           </span>
         ),
         chatId: chat.chatId,
-        dateAdded: chat.dateAdded,
+        dateAdded: new Date(chat.dateAdded).toLocaleString("ru"),
       })),
     };
   };

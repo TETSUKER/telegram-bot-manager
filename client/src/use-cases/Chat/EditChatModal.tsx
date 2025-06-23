@@ -3,16 +3,16 @@ import { Button, Modal, TextInput } from "components";
 import { XIcon } from "@heroicons/react/outline";
 import { useAppSelector } from "hooks/useSelector";
 import { useAppDispatch } from "hooks/useDispatch";
-import { Status } from "store/addChatModalSlice";
+import { Status } from "store/chat/addChatModalSlice";
 import {
   closeEditChatModal,
   editChatRequest,
   setChatName,
   setChatId,
-} from "store/editChatModalSlice";
+} from "store/chat/editChatModalSlice";
 
 export const EditChatModal: React.FC = () => {
-  const editChatModalState = useAppSelector((state) => state.editChatModal);
+  const editChatModalState = useAppSelector((state) => state.chat.editChatModal);
   const dispatch = useAppDispatch();
 
   const isLoading = editChatModalState.status === Status.LOADING;
