@@ -1,32 +1,54 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { addChat } from "api/chat";
-import { fetchChats } from './chatsTableSlice';
-
-export enum Status {
-  IDLE = "IDLE",
-  LOADING = "LOADING",
-  SUCCESS = "SUCCESS",
-  ERROR = "ERROR",
-}
+import { fetchChats } from "./chatsTableSlice";
+import { ButtonState, InputState, ThunkApiConfig } from "store/interfaces";
 
 interface AddChatModalSliceState {
   isOpened: boolean;
-  status: Status;
+  name: InputState;
+  chatId: InputState;
+  apply: ButtonState;
+  cancel: ButtonState;
 }
 
 const initialState: AddChatModalSliceState = {
   isOpened: false,
-  status: Status.IDLE,
+  name: {
+    value: "",
+    label: "Chat name",
+    placeholder: "",
+    disabled: false,
+  },
+  chatId: {
+    value: "",
+    label: "Chat id",
+    placeholder: "",
+    disabled: false,
+  },
+  apply: {
+    text: "Apply",
+    loading: false,
+    disabled: false,
+  },
+  cancel: {
+    text: "Cancel",
+    loading: false,
+    disabled: false,
+  },
 };
 
-export const addChatRequest = createAsyncThunk(
-  "addChatModel/update",
-  async (chat: { name: string; chatId: string }, { dispatch }) => {
-    const { name, chatId } = chat;
-    await addChat({ name, chatId });
-    dispatch(fetchChats());
-  }
-);
+export const addChatRequest = createAsyncThunk<
+  Promise<void>,
+  void,
+  ThunkApiConfig
+>("addChatModel/update", async (_, { dispatch, getState }) => {
+  const state = getState();
+  await addChat({
+    name: state.chat.addChatModal.name.value,
+    chatId: state.chat.addChatModal.chatId.value,
+  });
+  dispatch(fetchChats());
+});
 
 export const addChatModalSlice = createSlice({
   name: "addChatModel",
@@ -38,21 +60,34 @@ export const addChatModalSlice = createSlice({
     closeAddChatModal(state): void {
       state.isOpened = false;
     },
+    setChatName(state, action: PayloadAction<string>): void {
+      state.name.value = action.payload;
+    },
+    setChatId(state, action: PayloadAction<string>): void {
+      state.chatId.value = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(addChatRequest.pending, (state) => {
-      state.status = Status.LOADING;
+      state.name.disabled = true;
+      state.chatId.disabled = true;
+      state.apply.loading = true;
     });
     builder.addCase(addChatRequest.fulfilled, (state) => {
-      state.status = Status.SUCCESS;
       state.isOpened = false;
+      state.name.disabled = false;
+      state.chatId.disabled = false;
+      state.apply.loading = false;
     });
     builder.addCase(addChatRequest.rejected, (state) => {
-      state.status = Status.ERROR;
+      state.name.disabled = false;
+      state.chatId.disabled = false;
+      state.apply.loading = false;
     });
   },
 });
 
-export const { openAddChatModal, closeAddChatModal } = addChatModalSlice.actions;
+export const { openAddChatModal, closeAddChatModal, setChatName, setChatId } =
+  addChatModalSlice.actions;
 
 export default addChatModalSlice.reducer;

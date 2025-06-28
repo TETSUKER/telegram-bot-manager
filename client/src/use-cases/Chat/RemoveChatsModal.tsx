@@ -5,18 +5,14 @@ import { useAppSelector } from "hooks/useSelector";
 import { useAppDispatch } from "hooks/useDispatch";
 import {
   closeRemoveChatsModal,
-  Status,
   removeChatsRequest,
 } from "store/chat/removeChatsModalSlice";
 
 export const RemoveChatsModal: React.FC = () => {
   const dispatch = useAppDispatch();
-  const selectedChatIds = useAppSelector(
-    (state) => state.chat.chatsTable.selectedIds
+  const removeChatModalState = useAppSelector(
+    (state) => state.chat.removeChatModal
   );
-  const removeChatModalState = useAppSelector((state) => state.chat.removeChatModal);
-
-  const isLoading = removeChatModalState.status === Status.LOADING;
 
   return (
     <Modal
@@ -38,17 +34,17 @@ export const RemoveChatsModal: React.FC = () => {
       bottom={
         <div className="flex space-x-3 w-full pl-[50%]">
           <Button
-            text="Cancel"
+            text={removeChatModalState.cancel.text}
             type="outline"
             color="secondary"
             onClick={() => dispatch(closeRemoveChatsModal())}
           />
           <Button
-            text="Delete"
+            text={removeChatModalState.delete.text}
             type="fill"
             color="danger"
-            loading={isLoading}
-            onClick={() => dispatch(removeChatsRequest(selectedChatIds))}
+            loading={removeChatModalState.delete.loading}
+            onClick={() => dispatch(removeChatsRequest())}
           />
         </div>
       }

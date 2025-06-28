@@ -1,12 +1,18 @@
 import React from "react";
-import { ChatsTable, AddChatModal, RemoveChatsModal, EditChatModal } from "use-cases";
+import {
+  ChatsTable,
+  AddChatModal,
+  RemoveChatsModal,
+  EditChatModal,
+} from "use-cases";
 import { Button } from "components";
 import { PlusIcon, RefreshIcon, TrashIcon } from "@heroicons/react/outline";
 import { useAppSelector } from "hooks/useSelector";
 import { useAppDispatch } from "hooks/useDispatch";
-import { fetchChats, Status } from "store/chat/chatsTableSlice";
+import { fetchChats } from "store/chat/chatsTableSlice";
 import { openAddChatModal } from "store/chat/addChatModalSlice";
 import { openRemoveChatsModal } from "store/chat/removeChatsModalSlice";
+import { Status } from "store/interfaces";
 
 export const Chats: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -39,7 +45,9 @@ export const Chats: React.FC = () => {
           icon={<TrashIcon />}
           type="icon"
           color="danger"
-          onClick={() => dispatch(openRemoveChatsModal())}
+          onClick={() =>
+            dispatch(openRemoveChatsModal(chatsTableState.selectedIds))
+          }
           disabled={deleteButtonDisabled}
         />
       </div>

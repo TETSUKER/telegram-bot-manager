@@ -1,39 +1,48 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { removeChats } from "api/chat";
 import { fetchChats, clearSelection } from "./chatsTableSlice";
-
-export enum Status {
-  IDLE = "IDLE",
-  LOADING = "LOADING",
-  SUCCESS = "SUCCESS",
-  ERROR = "ERROR",
-}
+import { ButtonState, ThunkApiConfig } from "store/interfaces";
 
 interface RemoveChatsModalSliceState {
   isOpened: boolean;
-  status: Status;
+  chatIds: number[];
+  delete: ButtonState;
+  cancel: ButtonState;
 }
 
 const initialState: RemoveChatsModalSliceState = {
   isOpened: false,
-  status: Status.IDLE,
+  chatIds: [],
+  delete: {
+    text: "Apply",
+    loading: false,
+    disabled: false,
+  },
+  cancel: {
+    text: "Cancel",
+    loading: false,
+    disabled: false,
+  },
 };
 
-export const removeChatsRequest = createAsyncThunk(
-  "removeChatsModal/remove",
-  async (ids: number[], { dispatch }) => {
-    await removeChats(ids);
-    dispatch(clearSelection());
-    dispatch(fetchChats());
-  }
-);
+export const removeChatsRequest = createAsyncThunk<
+  Promise<void>,
+  void,
+  ThunkApiConfig
+>("removeChatsModal/remove", async (_, { dispatch, getState }) => {
+  const ids = getState().chat.removeChatModal.chatIds;
+  await removeChats(ids);
+  dispatch(clearSelection());
+  dispatch(fetchChats());
+});
 
 export const removeChatsModalSlice = createSlice({
   name: "removeChatsModal",
   initialState,
   reducers: {
-    openRemoveChatsModal(state): void {
+    openRemoveChatsModal(state, action: PayloadAction<number[]>): void {
       state.isOpened = true;
+      state.chatIds = action.payload;
     },
     closeRemoveChatsModal(state): void {
       state.isOpened = false;
@@ -41,14 +50,14 @@ export const removeChatsModalSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(removeChatsRequest.pending, (state) => {
-      state.status = Status.LOADING;
+      state.delete.loading = true;
     });
     builder.addCase(removeChatsRequest.fulfilled, (state) => {
-      state.status = Status.SUCCESS;
+      state.delete.loading = false;
       state.isOpened = false;
     });
     builder.addCase(removeChatsRequest.rejected, (state) => {
-      state.status = Status.ERROR;
+      state.delete.loading = false;
     });
   },
 });

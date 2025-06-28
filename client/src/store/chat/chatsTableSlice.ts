@@ -1,11 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { getChats, ServerChat } from "api/chat";
-
-export enum Status {
-  LOADING = "LOADING",
-  SUCCESS = "SUCCESS",
-  ERROR = "ERROR",
-}
+import { Status } from "store/interfaces";
 
 interface ChatsTableSliceState {
   chats: ServerChat[];
@@ -27,8 +22,10 @@ export const fetchChats = createAsyncThunk("chats/update", async () => {
   return await getChats();
 });
 
-const getIsAllSelected = (chats: ServerChat[], selectedIds: number[]) => chats.length > 0 && selectedIds.length === chats.length;
-const getIsSomeSelected = (chats: ServerChat[], selectedIds: number[]) => selectedIds.length > 0 && !getIsAllSelected(chats, selectedIds);
+const getIsAllSelected = (chats: ServerChat[], selectedIds: number[]) =>
+  chats.length > 0 && selectedIds.length === chats.length;
+const getIsSomeSelected = (chats: ServerChat[], selectedIds: number[]) =>
+  selectedIds.length > 0 && !getIsAllSelected(chats, selectedIds);
 
 export const chatsTableSlice = createSlice({
   name: "chats",
@@ -58,7 +55,7 @@ export const chatsTableSlice = createSlice({
       state.selectedIds = [];
       state.isAllSelected = getIsAllSelected(state.chats, state.selectedIds);
       state.isSomeSelected = getIsSomeSelected(state.chats, state.selectedIds);
-    }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchChats.pending, (state) => {
@@ -76,6 +73,7 @@ export const chatsTableSlice = createSlice({
   },
 });
 
-export const { toggleSelectItem, toggleSelectAll, clearSelection } = chatsTableSlice.actions;
+export const { toggleSelectItem, toggleSelectAll, clearSelection } =
+  chatsTableSlice.actions;
 
 export default chatsTableSlice.reducer;

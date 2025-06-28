@@ -1,37 +1,57 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { EditChat, editChat } from "api/chat";
 import { fetchChats } from "./chatsTableSlice";
-
-export enum Status {
-  IDLE = "IDLE",
-  LOADING = "LOADING",
-  SUCCESS = "SUCCESS",
-  ERROR = "ERROR",
-}
+import { ButtonState, InputState, ThunkApiConfig } from "store/interfaces";
 
 interface EditChatModalSliceState {
   isOpened: boolean;
   id: number;
-  name: string;
-  chatId: string;
-  status: Status;
+  name: InputState;
+  chatId: InputState;
+  apply: ButtonState;
+  cancel: ButtonState;
 }
 
 const initialState: EditChatModalSliceState = {
   isOpened: false,
   id: 0,
-  name: "",
-  chatId: "",
-  status: Status.IDLE,
+  name: {
+    value: "",
+    label: "Chat name",
+    placeholder: "",
+    disabled: false,
+  },
+  chatId: {
+    value: "",
+    label: "Chat id",
+    placeholder: "",
+    disabled: false,
+  },
+  apply: {
+    text: "Apply",
+    loading: false,
+    disabled: false,
+  },
+  cancel: {
+    text: "Cancel",
+    loading: false,
+    disabled: false,
+  },
 };
 
-export const editChatRequest = createAsyncThunk(
-  "editChatModel/edit",
-  async (chat: EditChat, { dispatch }) => {
-    await editChat(chat);
-    dispatch(fetchChats());
-  }
-);
+export const editChatRequest = createAsyncThunk<
+  Promise<void>,
+  void,
+  ThunkApiConfig
+>("editChatModel/edit", async (_, { dispatch, getState }) => {
+  const state = getState();
+  await editChat({
+    id: state.chat.editChatModal.id,
+    name: state.chat.editChatModal.name.value,
+    chatId: state.chat.editChatModal.chatId.value,
+  });
+  dispatch(fetchChats());
+});
 
 export const editChatModalSlice = createSlice({
   name: "editChatModel",
@@ -40,29 +60,35 @@ export const editChatModalSlice = createSlice({
     openEditChatModal(state, action: PayloadAction<EditChat>): void {
       state.isOpened = true;
       state.id = action.payload.id;
-      state.name = action.payload.name ?? "";
-      state.chatId = action.payload.chatId ?? "";
+      state.name.value = action.payload.name ?? "";
+      state.chatId.value = action.payload.chatId ?? "";
     },
     closeEditChatModal(state): void {
       state.isOpened = false;
     },
     setChatName(state, action: PayloadAction<string>): void {
-      state.name = action.payload;
+      state.name.value = action.payload;
     },
     setChatId(state, action: PayloadAction<string>): void {
-      state.chatId = action.payload;
+      state.chatId.value = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder.addCase(editChatRequest.pending, (state) => {
-      state.status = Status.LOADING;
+      state.name.disabled = true;
+      state.chatId.disabled = true;
+      state.apply.loading = true;
     });
-    builder.addCase(editChatRequest.fulfilled, (state, action) => {
-      state.status = Status.SUCCESS;
+    builder.addCase(editChatRequest.fulfilled, (state) => {
       state.isOpened = false;
+      state.name.disabled = false;
+      state.chatId.disabled = false;
+      state.apply.loading = false;
     });
     builder.addCase(editChatRequest.rejected, (state) => {
-      state.status = Status.ERROR;
+      state.name.disabled = false;
+      state.chatId.disabled = false;
+      state.apply.loading = false;
     });
   },
 });
