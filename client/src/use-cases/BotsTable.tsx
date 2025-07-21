@@ -66,5 +66,5 @@ export const BotsTable: React.FC = () => {
     setBotsTableData(getTableData(serverBots));
   }, [selectedIds]);
 
-  return <Table tableData={botsTableData}></Table>;
+  return <Table tableData={botsTableData} isLoading={false}></Table>;
 };

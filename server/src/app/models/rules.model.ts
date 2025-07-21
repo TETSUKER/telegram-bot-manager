@@ -48,7 +48,7 @@ export class RulesModel {
     }, {
       columnName: 'length_operator',
       type: 'varchar',
-      length: 1,
+      length: 2,
     }, {
       columnName: 'length_value',
       type: 'int',
@@ -349,6 +349,7 @@ export class RulesModel {
 
           if (rule.condition.schedule.type === 'annually' && updateModelRule.schedule_type === 'annually') {
             updateModelRule.schedule_month = rule.condition.schedule.month;
+            updateModelRule.schedule_day = rule.condition.schedule.day;
           }
         }
       }
@@ -370,7 +371,7 @@ export class RulesModel {
         updateModelRule.response_emoji = rule.response.emoji;
       }
     }
-    if (rule.probability) {
+    if (typeof rule.probability === 'number') {
       updateModelRule.probability = rule.probability;
     }
 

@@ -19,6 +19,7 @@ export const EditChatModal: React.FC = () => {
   return (
     <Modal
       isOpen={editChatModalState.isOpened}
+      isLoading={false}
       header={
         <div className="flex justify-between items-center w-full">
           <h2 className="text-xl font-medium text-white">Edit chat</h2>

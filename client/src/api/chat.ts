@@ -24,7 +24,7 @@ export async function getChats(): Promise<ServerChat[]> {
     method: "POST",
     body: JSON.stringify({}),
   });
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  // await new Promise(resolve => setTimeout(resolve, 1000));
   return response.json();
 }
 
@@ -34,7 +34,7 @@ export async function addChat(body: NewChat): Promise<Response> {
     method: "POST",
     body: JSON.stringify(body),
   });
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  // await new Promise(resolve => setTimeout(resolve, 1000));
   return response;
 }
 
@@ -44,7 +44,7 @@ export async function removeChats(ids: number[]): Promise<Response> {
     method: "POST",
     body: JSON.stringify({ids}),
   });
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  // await new Promise(resolve => setTimeout(resolve, 1000));
   return response;
 }
 
@@ -54,6 +54,6 @@ export async function editChat(chat: EditChat): Promise<Response> {
     method: "POST",
     body: JSON.stringify({...chat}),
   });
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  // await new Promise(resolve => setTimeout(resolve, 1000));
   return response;
 }

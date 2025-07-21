@@ -3,48 +3,46 @@ import { Button, Modal } from "components";
 import { XIcon } from "@heroicons/react/outline";
 import { useAppSelector } from "hooks/useSelector";
 import { useAppDispatch } from "hooks/useDispatch";
-import {
-  closeRemoveChatsModal,
-  removeChatsRequest,
-} from "store/chat/removeChatsModalSlice";
+import { closeRemoveRulesModal, removeRulesRequest } from 'store/rules/removeRulesModalSlice';
 
-export const RemoveChatsModal: React.FC = () => {
+export const RemoveRulesModal: React.FC = () => {
   const dispatch = useAppDispatch();
-  const removeChatModalState = useAppSelector(
-    (state) => state.chat.removeChatModal
+  const removeRuleModalState = useAppSelector(
+    (state) => state.rule.removeRulesModal
   );
 
   return (
     <Modal
-      isOpen={removeChatModalState.isOpened}
+      isOpen={removeRuleModalState.isOpened}
+      isLoading={false}
       header={
         <div className="flex justify-between items-center w-full">
-          <h2 className="text-xl font-medium text-white">Remove chats</h2>
+          <h2 className="text-xl font-medium text-white">Remove rules</h2>
           <XIcon
             className="size-6 text-slate-400 cursor-pointer"
-            onClick={() => dispatch(closeRemoveChatsModal())}
+            onClick={() => dispatch(closeRemoveRulesModal())}
           />
         </div>
       }
       content={
         <span className="text-white">
-          Do you really want to delete the selected chats?
+          Do you really want to delete the selected rules?
         </span>
       }
       bottom={
         <div className="flex space-x-3 w-full pl-[50%]">
           <Button
-            text={removeChatModalState.cancel.text}
+            text={removeRuleModalState.cancel.text}
             type="outline"
             color="secondary"
-            onClick={() => dispatch(closeRemoveChatsModal())}
+            onClick={() => dispatch(closeRemoveRulesModal())}
           />
           <Button
-            text={removeChatModalState.delete.text}
+            text={removeRuleModalState.delete.text}
             type="fill"
             color="danger"
-            loading={removeChatModalState.delete.loading}
-            onClick={() => dispatch(removeChatsRequest())}
+            loading={removeRuleModalState.delete.loading}
+            onClick={() => dispatch(removeRulesRequest())}
           />
         </div>
       }

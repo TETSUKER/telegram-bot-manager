@@ -76,5 +76,5 @@ export const ChatsTable: React.FC = () => {
     setChatsTableData(getTableData(chatsTableState.chats));
   }, [chatsTableState]);
 
-  return <Table tableData={chatsTableData}></Table>;
+  return <Table tableData={chatsTableData} isLoading={false}></Table>;
 };

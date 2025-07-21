@@ -1,20 +1,22 @@
 import React from "react";
 
-interface TextInputProps {
+interface NumberInputProps {
+  min: number;
+  max: number;
   label?: string;
   placeholder?: string;
   disabled?: boolean;
-  initialValue?: string;
-  maxLength?: number;
-  onChange: (value: string) => void;
+  initialValue?: number;
+  onChange: (value: number) => void;
 }
 
-export const TextInput: React.FC<TextInputProps> = ({
+export const NumberInput: React.FC<NumberInputProps> = ({
   label,
   placeholder,
   disabled,
-  initialValue,
-  maxLength = 500,
+  initialValue = 0,
+  min = 0,
+  max = 1,
   onChange,
 }) => {
   return (
@@ -27,12 +29,13 @@ export const TextInput: React.FC<TextInputProps> = ({
           bg-transparent border border-slate-300 text-slate-300 p-[8px] rounded-[5px] leading-none text-[16px]
           focus-visible:outline-none disabled:border-slate-600
         "
-        type="text"
+        type="number"
         placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onChange(Number(e.target.value))}
         disabled={!!disabled}
         value={initialValue}
-        maxLength={maxLength}
+        min={min}
+        max={max}
       />
     </label>
   );

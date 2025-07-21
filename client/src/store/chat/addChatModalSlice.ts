@@ -1,12 +1,12 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { addChat } from "api/chat";
 import { fetchChats } from "./chatsTableSlice";
-import { ButtonState, InputState, ThunkApiConfig } from "store/interfaces";
+import { ButtonState, TextInputState, ThunkApiConfig } from "store/interfaces";
 
 interface AddChatModalSliceState {
   isOpened: boolean;
-  name: InputState;
-  chatId: InputState;
+  name: TextInputState;
+  chatId: TextInputState;
   apply: ButtonState;
   cancel: ButtonState;
 }
@@ -18,12 +18,14 @@ const initialState: AddChatModalSliceState = {
     label: "Chat name",
     placeholder: "",
     disabled: false,
+    visible: true,
   },
   chatId: {
     value: "",
     label: "Chat id",
     placeholder: "",
     disabled: false,
+    visible: true,
   },
   apply: {
     text: "Apply",

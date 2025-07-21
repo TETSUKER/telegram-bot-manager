@@ -1,13 +1,13 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { EditChat, editChat } from "api/chat";
 import { fetchChats } from "./chatsTableSlice";
-import { ButtonState, InputState, ThunkApiConfig } from "store/interfaces";
+import { ButtonState, TextInputState, ThunkApiConfig } from "store/interfaces";
 
 interface EditChatModalSliceState {
   isOpened: boolean;
   id: number;
-  name: InputState;
-  chatId: InputState;
+  name: TextInputState;
+  chatId: TextInputState;
   apply: ButtonState;
   cancel: ButtonState;
 }
@@ -20,12 +20,14 @@ const initialState: EditChatModalSliceState = {
     label: "Chat name",
     placeholder: "",
     disabled: false,
+    visible: true,
   },
   chatId: {
     value: "",
     label: "Chat id",
     placeholder: "",
     disabled: false,
+    visible: true,
   },
   apply: {
     text: "Apply",
@@ -54,7 +56,7 @@ export const editChatRequest = createAsyncThunk<
 });
 
 export const editChatModalSlice = createSlice({
-  name: "editChatModel",
+  name: "editRuleModel",
   initialState,
   reducers: {
     openEditChatModal(state, action: PayloadAction<EditChat>): void {
