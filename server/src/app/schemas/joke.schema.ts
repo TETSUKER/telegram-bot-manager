@@ -4,6 +4,10 @@ import { z, ZodType } from 'zod';
 export const FilterJokeSchema = z.object({
   ids: z.array(z.number()).optional(),
   text: z.string().optional(),
+  sendedChatIds: z.object({
+    ids: z.array(z.string()),
+    exclude: z.boolean(),
+  }).optional(),
 }) satisfies ZodType<FilterJokeApi>;
 
 export const NewJokeSchema = z.object({
