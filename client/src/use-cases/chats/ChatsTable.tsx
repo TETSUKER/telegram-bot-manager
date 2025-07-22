@@ -8,7 +8,7 @@ import {
 import { ServerChat } from "api/chat";
 import { useAppSelector } from "hooks/useSelector";
 import { useAppDispatch } from "hooks/useDispatch";
-import { fetchChats } from "store/chat/chatsTableSlice";
+import { updateChats } from "store/chat/chatsTableSlice";
 import { toggleSelectItem, toggleSelectAll } from "store/chat/chatsTableSlice";
 import { openEditChatModal } from "store/chat/editChatModalSlice";
 
@@ -69,7 +69,7 @@ export const ChatsTable: React.FC = () => {
   };
 
   React.useEffect(() => {
-    dispatch(fetchChats());
+    dispatch(updateChats());
   }, []);
 
   React.useEffect(() => {

@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { removeChats } from "api/chat";
-import { fetchChats, clearSelection } from "./chatsTableSlice";
+import { updateChats, clearSelection } from "./chatsTableSlice";
 import { ButtonState, ThunkApiConfig } from "store/interfaces";
 
 interface RemoveChatsModalSliceState {
@@ -33,7 +33,7 @@ export const removeChatsRequest = createAsyncThunk<
   const ids = getState().chat.removeChatModal.chatIds;
   await removeChats(ids);
   dispatch(clearSelection());
-  dispatch(fetchChats());
+  dispatch(updateChats());
 });
 
 export const removeChatsModalSlice = createSlice({

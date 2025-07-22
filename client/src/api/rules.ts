@@ -109,7 +109,7 @@ export async function getRules(): Promise<ServerRule[]> {
     method: "POST",
     body: JSON.stringify({}),
   });
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  // await new Promise(resolve => setTimeout(resolve, 1000));
   return response.json();
 }
 

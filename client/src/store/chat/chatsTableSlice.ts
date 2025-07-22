@@ -18,7 +18,7 @@ const initialState: ChatsTableSliceState = {
   status: Status.LOADING,
 };
 
-export const fetchChats = createAsyncThunk("chats/update", async () => {
+export const updateChats = createAsyncThunk("chats/update", async () => {
   return await getChats();
 });
 
@@ -58,15 +58,15 @@ export const chatsTableSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(fetchChats.pending, (state) => {
+    builder.addCase(updateChats.pending, (state) => {
       state.status = Status.LOADING;
       state.chats = [];
     });
-    builder.addCase(fetchChats.fulfilled, (state, action) => {
+    builder.addCase(updateChats.fulfilled, (state, action) => {
       state.status = Status.SUCCESS;
       state.chats = action.payload;
     });
-    builder.addCase(fetchChats.rejected, (state) => {
+    builder.addCase(updateChats.rejected, (state) => {
       state.status = Status.ERROR;
       state.chats = [];
     });

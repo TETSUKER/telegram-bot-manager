@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { addChat } from "api/chat";
-import { fetchChats } from "./chatsTableSlice";
+import { updateChats } from "./chatsTableSlice";
 import { ButtonState, TextInputState, ThunkApiConfig } from "store/interfaces";
 
 interface AddChatModalSliceState {
@@ -49,7 +49,7 @@ export const addChatRequest = createAsyncThunk<
     name: state.chat.addChatModal.name.value,
     chatId: state.chat.addChatModal.chatId.value,
   });
-  dispatch(fetchChats());
+  dispatch(updateChats());
 });
 
 export const addChatModalSlice = createSlice({
