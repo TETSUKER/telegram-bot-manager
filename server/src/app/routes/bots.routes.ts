@@ -23,8 +23,8 @@ export class BotsRoutes {
       await this.botsController.addBot(req, res);
     });
 
-    this.router.post<{ ids: number[] }>('/removeBot', [writeHeadJson, parseBody, validateSchema(IdsSchema)], async (req, res) => {
-      await this.botsController.removeBot(req, res);
+    this.router.post<{ ids: number[] }>('/removeBots', [writeHeadJson, parseBody, validateSchema(IdsSchema)], async (req, res) => {
+      await this.botsController.removeBots(req, res);
     });
 
     this.router.post<UpdateBotApi>('/updateBot', [writeHeadJson, parseBody, validateSchema(UpdateBotSchema)], async (req, res) => {

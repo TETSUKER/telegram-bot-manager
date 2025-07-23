@@ -5,7 +5,7 @@ interface ChipSelectorInputProps<T = string> {
   label?: string;
   placeholder?: string;
   disabled?: boolean;
-  initialValue?: T[];
+  value?: T[];
   onChange: (value: T[]) => void;
 }
 
@@ -14,17 +14,18 @@ export function ChipSelector<T = string>({
   label,
   placeholder = "Select or add...",
   disabled = false,
-  initialValue,
+  value,
   onChange,
 }: ChipSelectorInputProps<T>): React.JSX.Element {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [options, setOptions] = React.useState(propsOptions);
-  const [selected, setSelected] = React.useState<T[]>(
-    initialValue ? [...initialValue] : []
-  );
+  const selected = value ? value : [];
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
 
-  // Закрытие dropdown при клике вне
+  React.useEffect(() => {
+    setOptions(propsOptions);
+  }, [propsOptions]);
+
   React.useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (!containerRef.current?.contains(e.target as Node))
@@ -34,23 +35,17 @@ export function ChipSelector<T = string>({
     return () => document.removeEventListener("mousedown", handler);
   }, [dropdownOpen]);
 
-  // Callback при изменении выбранных значений
-  React.useEffect(() => {
-    onChange(selected);
-  }, [selected, onChange]);
-
-  // Удаление выбранного чипа
   const removeChip = (value: T) => {
-    setSelected((prev) => prev.filter((v) => v !== value));
+    onChange(selected.filter((v) => v !== value));
   };
 
-  // Обработка выбора из списка
   const selectOption = (value: T) => {
-    setSelected((prev) => (prev.includes(value) ? prev : [...prev, value]));
+    if (!selected.includes(value)) {
+      onChange([...selected, value]);
+    }
     setDropdownOpen(false);
   };
 
-  // Фильтрация: показывать только невыбранные
   const filteredOptions = options.filter((o) => !selected.includes(o.value));
 
   return (
@@ -62,9 +57,7 @@ export function ChipSelector<T = string>({
         tabIndex={0}
         className={[
           "relative flex flex-wrap items-center gap-1 bg-transparent border border-slate-300 text-slate-300 p-[4px] rounded-[5px]",
-          disabled
-            ? "opacity-60 cursor-not-allowed"
-            : "cursor-pointer",
+          disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
         ].join(" ")}
         onClick={() => !disabled && setDropdownOpen((v) => !v)}
         onKeyDown={(e) => {
@@ -147,4 +140,4 @@ export function ChipSelector<T = string>({
       </div>
     </div>
   );
-};
+}

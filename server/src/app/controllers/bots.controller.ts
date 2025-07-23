@@ -14,7 +14,7 @@ export class BotsController {
     }
   }
 
-  public async removeBot(request: Request<{ ids: number[] }>, response: ServerResponse): Promise<void> {
+  public async removeBots(request: Request<{ ids: number[] }>, response: ServerResponse): Promise<void> {
     if (request.body) {
       await this.botsService.removeBot(request.body.ids);
       response.end('Bot successfully removed');
