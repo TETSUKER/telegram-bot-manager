@@ -13,7 +13,7 @@ export class MessageResponseService {
   }
 
   public async sendStickerMessage(token: string, chatId: number, stickerId: string, message_id?: number): Promise<void> {
-    await this.telegramService.sendTextMessage(token, chatId, stickerId, message_id);
+    await this.telegramService.sendSticker(token, chatId, stickerId, message_id);
   }
 
   public async setEmojiReaction(token: string, chatId: number, message_id: number, emoji: string): Promise<void> {
