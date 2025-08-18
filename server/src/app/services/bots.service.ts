@@ -73,10 +73,14 @@ export class BotsService {
 
   private publishChangedBotRules(oldBot: Bot, newBot: Bot): void {
     const addedRuleIds = newBot.ruleIds?.filter(id => !oldBot.ruleIds?.includes(id)) ?? [];
-    this.eventBus.publish(EventName.added_rules_to_bot, { ruleIds: addedRuleIds, botId: newBot.id });
+    if (addedRuleIds.length) {
+      this.eventBus.publish(EventName.added_rules_to_bot, { ruleIds: addedRuleIds, botId: newBot.id });
+    }
 
     const removedRuleIds = oldBot.ruleIds?.filter(id => !newBot.ruleIds?.includes(id)) ?? [];
-    this.eventBus.publish(EventName.removed_rules_from_bot, { ruleIds: removedRuleIds, botId: newBot.id });
+    if (removedRuleIds.length) {
+      this.eventBus.publish(EventName.removed_rules_from_bot, { ruleIds: removedRuleIds, botId: newBot.id });
+    }
   }
 }
 
