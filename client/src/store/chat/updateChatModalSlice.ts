@@ -1,9 +1,9 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { EditChat, editChat } from "api/chat";
+import { UpdateChat, updateChat } from "api/chat";
 import { updateChats } from "./chatsTableSlice";
 import { ButtonState, TextInputState, ThunkApiConfig } from "store/interfaces";
 
-interface EditChatModalSliceState {
+interface UpdateChatModalSliceState {
   isOpened: boolean;
   id: number;
   name: TextInputState;
@@ -12,7 +12,7 @@ interface EditChatModalSliceState {
   cancel: ButtonState;
 }
 
-const initialState: EditChatModalSliceState = {
+const initialState: UpdateChatModalSliceState = {
   isOpened: false,
   id: 0,
   name: {
@@ -41,31 +41,31 @@ const initialState: EditChatModalSliceState = {
   },
 };
 
-export const editChatRequest = createAsyncThunk<
+export const updateChatRequest = createAsyncThunk<
   Promise<void>,
   void,
   ThunkApiConfig
->("editChatModel/edit", async (_, { dispatch, getState }) => {
+>("updateChatModel/update", async (_, { dispatch, getState }) => {
   const state = getState();
-  await editChat({
-    id: state.chat.editChatModal.id,
-    name: state.chat.editChatModal.name.value,
-    chatId: state.chat.editChatModal.chatId.value,
+  await updateChat({
+    id: state.chat.updateChatModal.id,
+    name: state.chat.updateChatModal.name.value,
+    chatId: state.chat.updateChatModal.chatId.value,
   });
   dispatch(updateChats());
 });
 
-export const editChatModalSlice = createSlice({
-  name: "editRuleModel",
+export const updateChatModalSlice = createSlice({
+  name: "updateRuleModel",
   initialState,
   reducers: {
-    openEditChatModal(state, action: PayloadAction<EditChat>): void {
+    openUpdateChatModal(state, action: PayloadAction<UpdateChat>): void {
       state.isOpened = true;
       state.id = action.payload.id;
       state.name.value = action.payload.name ?? "";
       state.chatId.value = action.payload.chatId ?? "";
     },
-    closeEditChatModal(state): void {
+    closeUpdateChatModal(state): void {
       state.isOpened = false;
     },
     setChatName(state, action: PayloadAction<string>): void {
@@ -76,18 +76,18 @@ export const editChatModalSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(editChatRequest.pending, (state) => {
+    builder.addCase(updateChatRequest.pending, (state) => {
       state.name.disabled = true;
       state.chatId.disabled = true;
       state.apply.loading = true;
     });
-    builder.addCase(editChatRequest.fulfilled, (state) => {
+    builder.addCase(updateChatRequest.fulfilled, (state) => {
       state.isOpened = false;
       state.name.disabled = false;
       state.chatId.disabled = false;
       state.apply.loading = false;
     });
-    builder.addCase(editChatRequest.rejected, (state) => {
+    builder.addCase(updateChatRequest.rejected, (state) => {
       state.name.disabled = false;
       state.chatId.disabled = false;
       state.apply.loading = false;
@@ -95,7 +95,7 @@ export const editChatModalSlice = createSlice({
   },
 });
 
-export const { openEditChatModal, closeEditChatModal, setChatName, setChatId } =
-  editChatModalSlice.actions;
+export const { openUpdateChatModal, closeUpdateChatModal, setChatName, setChatId } =
+  updateChatModalSlice.actions;
 
-export default editChatModalSlice.reducer;
+export default updateChatModalSlice.reducer;

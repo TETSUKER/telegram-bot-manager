@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { createBot } from "api/bots";
+import { addBot } from "api/bots";
 import { ButtonState, TextInputState, ThunkApiConfig } from "store/interfaces";
 import { updateBotsTable } from "./botsTableSlice";
 
@@ -22,7 +22,7 @@ const initialState: CreateBotModalSliceState = {
     visible: true,
   },
   apply: {
-    text: "Apply",
+    text: "Add",
     loading: false,
     disabled: false,
   },
@@ -33,16 +33,16 @@ const initialState: CreateBotModalSliceState = {
   },
 };
 
-export const createBotRequest = createAsyncThunk<
+export const addBotRequest = createAsyncThunk<
   Promise<void>,
   void,
   ThunkApiConfig
->("createBotModel/create", async (_, { dispatch, getState, rejectWithValue }) => {
+>("addBotModel/add", async (_, { dispatch, getState }) => {
   try {
     const state = getState();
-    const token = state.bot.createBotModal.token.value;
-    await createBot(token);
-    dispatch(closeCreateBotModal());
+    const token = state.bot.addBotModal.token.value;
+    await addBot(token);
+    dispatch(closeAddBotModal());
     dispatch(updateBotsTable());
   } catch (err) {
     if ((err as any).error) {
@@ -55,14 +55,14 @@ export const createBotRequest = createAsyncThunk<
   }
 });
 
-export const createBotModalSlice = createSlice({
-  name: "createBotModel",
+export const addBotModalSlice = createSlice({
+  name: "addBotModel",
   initialState,
   reducers: {
-    openCreateBotModal(state): void {
+    openAddBotModal(state): void {
       state.isOpened = true;
     },
-    closeCreateBotModal(state): void {
+    closeAddBotModal(state): void {
       state.isOpened = false;
     },
     setToken(state, action: PayloadAction<string>): void {
@@ -70,19 +70,19 @@ export const createBotModalSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(createBotRequest.pending, (state) => {
+    builder.addCase(addBotRequest.pending, (state) => {
       state.isLoading = true;
     });
-    builder.addCase(createBotRequest.fulfilled, (state) => {
+    builder.addCase(addBotRequest.fulfilled, (state) => {
       state.isLoading = false;
     });
-    builder.addCase(createBotRequest.rejected, (state) => {
+    builder.addCase(addBotRequest.rejected, (state) => {
       state.isLoading = false;
     });
   },
 });
 
-export const { openCreateBotModal, closeCreateBotModal, setToken } =
-  createBotModalSlice.actions;
+export const { openAddBotModal, closeAddBotModal, setToken } =
+  addBotModalSlice.actions;
 
-export default createBotModalSlice.reducer;
+export default addBotModalSlice.reducer;

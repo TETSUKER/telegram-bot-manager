@@ -25,7 +25,7 @@ export async function getJokes(): Promise<ServerJoke[]> {
   return response.json();
 }
 
-export async function editJoke(joke: UpdateJoke): Promise<any> {
+export async function updateJoke(joke: UpdateJoke): Promise<any> {
   const path = baseUrl + "/updateJoke";
   try {
     const response = await fetch(path, {
@@ -44,7 +44,7 @@ export async function editJoke(joke: UpdateJoke): Promise<any> {
   }
 }
 
-export async function addJoke(joke: NewJoke): Promise<any> {
+export async function createJoke(joke: NewJoke): Promise<any> {
   const path = baseUrl + "/addJoke";
   try {
     const response = await fetch(path, {
@@ -63,7 +63,7 @@ export async function addJoke(joke: NewJoke): Promise<any> {
   }
 }
 
-export async function removeJokes(ids: number[]): Promise<Response> {
+export async function deleteJokes(ids: number[]): Promise<Response> {
   const path = baseUrl + '/removeJokes';
   const response = await fetch(path, {
     method: "POST",

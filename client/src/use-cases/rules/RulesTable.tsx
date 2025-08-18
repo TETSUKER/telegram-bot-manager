@@ -10,7 +10,7 @@ import { useAppDispatch } from "hooks/useDispatch";
 import { toggleSelectItem, toggleSelectAll } from "store/rules/rulesTableSlice";
 import { ServerRule } from "api/rules";
 import { updateRules } from "store/rules/rulesTableSlice";
-import { openEditRuleModal } from "store/rules/editRuleModalSlice";
+import { openUpdateRuleModal } from "store/rules/updateRuleModalSlice";
 import { Status } from "store/interfaces";
 
 interface RulesTableRow {
@@ -52,7 +52,7 @@ export const RulesTable: React.FC = () => {
         id: rule.id,
         name: (
           <span
-            onClick={() => dispatch(openEditRuleModal(rule))}
+            onClick={() => dispatch(openUpdateRuleModal(rule))}
             className="text-white hover:underline cursor-pointer"
           >
             {rule.name}

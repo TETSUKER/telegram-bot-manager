@@ -11,23 +11,22 @@ import {
 } from "store/interfaces";
 import { updateRules } from "./rulesTableSlice";
 import {
+  createRule,
   DayOfWeek,
-  editRule,
   MessageLengthOperator,
   Month,
+  NewRule,
   RuleCondition,
   RuleConditionType,
   RuleResponse,
   RuleResponseType,
   ScheduleType,
-  ServerRule,
 } from "api/rules";
 import { getChats, ServerChat } from "api/chat";
 
-interface EditRuleModalSliceState {
+interface CreateRuleModalSliceState {
   isOpened: boolean;
   isLoading: boolean;
-  id: number;
   name: TextInputState;
   conditionType: SelectorInputState<RuleConditionType>;
   pattern: TextInputState;
@@ -50,7 +49,7 @@ interface EditRuleModalSliceState {
   cancel: ButtonState;
 }
 
-function getServerRuleFromState(state: EditRuleModalSliceState): ServerRule {
+function getServerRuleFromState(state: CreateRuleModalSliceState): NewRule {
   const getCondition = (): RuleCondition => {
     if (state.conditionType.value === RuleConditionType.schedule) {
       if (state.scheduleType.value === ScheduleType.weekly) {
@@ -144,7 +143,6 @@ function getServerRuleFromState(state: EditRuleModalSliceState): ServerRule {
   };
 
   return {
-    id: state.id,
     name: state.name.value,
     condition: getCondition(),
     response: getResponse(),
@@ -152,47 +150,44 @@ function getServerRuleFromState(state: EditRuleModalSliceState): ServerRule {
   };
 }
 
-export const editRuleRequest = createAsyncThunk<
+export const createRuleRequest = createAsyncThunk<
   Promise<void>,
   void,
   ThunkApiConfig
->("editRuleModel/edit", async (_, { dispatch, getState }) => {
+>("createRuleModel/create", async (_, { dispatch, getState }) => {
   try {
     const state = getState();
-    const rule = getServerRuleFromState(state.rule.editRuleModal);
-    await editRule(rule);
-    dispatch(closeEditRuleModal());
+    const rule = getServerRuleFromState(state.rule.createRuleModal);
+    await createRule(rule);
+    dispatch(closeCreateRuleModal());
     dispatch(updateRules());
   } catch (err) {
-    const errMessage = (err as Error).message ?? "Unknown error";
-    alert(errMessage);
+    if ((err as any).error) {
+      const error = (err as any).error;
+      const errMessage = (error as Error).message;
+      alert(errMessage);
+    } else {
+      alert(err);
+    }
   }
 });
 
-export const openEditRuleModal = createAsyncThunk<
-  {
-    serverRule: ServerRule;
-    serverChats: ServerChat[];
-  } | void,
-  ServerRule,
+export const openCreateRuleModal = createAsyncThunk<
+  ServerChat[] | void,
+  void,
   ThunkApiConfig
->("editRuleModel/open", async (rule, { rejectWithValue }) => {
+>("createRuleModal/open", async (_, { rejectWithValue }) => {
   try {
-    const chats = await getChats();
-    return {
-      serverRule: rule,
-      serverChats: chats,
-    };
+    return await getChats();
   } catch (err) {
     const errMessage = (err as Error).message ?? "Unknown error";
     rejectWithValue(errMessage);
   }
 });
 
-const initialState: EditRuleModalSliceState = {
+const initialState: CreateRuleModalSliceState = {
   isOpened: false,
   isLoading: false,
-  id: 0,
   name: {
     value: "",
     label: "Rule name",
@@ -379,7 +374,7 @@ const initialState: EditRuleModalSliceState = {
   },
 };
 
-function updateVisibleState(state: EditRuleModalSliceState): void {
+function updateVisibleState(state: CreateRuleModalSliceState): void {
   if (state.conditionType.value === RuleConditionType.regex) {
     state.pattern.visible = true;
     state.lengthValue.visible = false;
@@ -475,86 +470,11 @@ function updateVisibleState(state: EditRuleModalSliceState): void {
   }
 }
 
-function setServerRuleToState(
-  serverRule: ServerRule,
-  state: EditRuleModalSliceState
-): void {
-  state.name.value = serverRule.name;
-  state.probability.value = serverRule.probability ?? 100;
-
-  if (serverRule.condition.type === RuleConditionType.schedule) {
-    state.conditionType.value = RuleConditionType.schedule;
-    const hours = serverRule.condition.schedule.hour
-      .toString()
-      .padStart(2, "0");
-    const minutes = serverRule.condition.schedule.minute
-      .toString()
-      .padStart(2, "0");
-    const scheduleTime = `${hours}:${minutes}`;
-    state.scheduleTime.value = scheduleTime;
-    state.scheduleChats.value = serverRule.condition.scheduleChatIds;
-
-    if (serverRule.condition.schedule.type === ScheduleType.weekly) {
-      state.scheduleType.value = ScheduleType.weekly;
-      state.scheduleDayOfWeek.value = serverRule.condition.schedule.dayOfWeek;
-    }
-
-    if (serverRule.condition.schedule.type === ScheduleType.annually) {
-      state.scheduleType.value = ScheduleType.annually;
-      state.scheduleDay.value = serverRule.condition.schedule.day;
-      state.scheduleMonth.value = serverRule.condition.schedule.month;
-    }
-  }
-
-  if (serverRule.condition.type === RuleConditionType.regex) {
-    state.conditionType.value = RuleConditionType.regex;
-    state.pattern.value = serverRule.condition.pattern;
-  }
-
-  if (serverRule.condition.type === RuleConditionType.command) {
-    state.conditionType.value = RuleConditionType.command;
-    state.commandName.value = serverRule.condition.name;
-  }
-
-  if (serverRule.condition.type === RuleConditionType.length) {
-    state.conditionType.value = RuleConditionType.length;
-    state.lengthValue.value = serverRule.condition.value;
-    state.lengthOperator.value = serverRule.condition.operator;
-  }
-
-  if (serverRule.response.type === RuleResponseType.message) {
-    state.responseType.value = RuleResponseType.message;
-    state.text.value = serverRule.response.text;
-  }
-
-  if (serverRule.response.type === RuleResponseType.emoji) {
-    state.responseType.value = RuleResponseType.emoji;
-    state.emoji.value = serverRule.response.emoji;
-  }
-
-  if (serverRule.response.type === RuleResponseType.sticker) {
-    state.responseType.value = RuleResponseType.sticker;
-    state.stickerId.value = serverRule.response.stickerId;
-  }
-
-  if (serverRule.response.type === RuleResponseType.find_joke) {
-    state.responseType.value = RuleResponseType.find_joke;
-  }
-
-  if (serverRule.response.type === RuleResponseType.joke_rating) {
-    state.responseType.value = RuleResponseType.joke_rating;
-  }
-
-  if (serverRule.response.type === RuleResponseType.random_joke) {
-    state.responseType.value = RuleResponseType.random_joke;
-  }
-}
-
-export const editRuleModalSlice = createSlice({
-  name: "editRuleModel",
+export const createRuleModalSlice = createSlice({
+  name: "createRuleModel",
   initialState,
   reducers: {
-    closeEditRuleModal(): EditRuleModalSliceState {
+    closeCreateRuleModal(): CreateRuleModalSliceState {
       return {
         ...initialState,
         isOpened: false,
@@ -622,39 +542,39 @@ export const editRuleModalSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(editRuleRequest.pending, (state) => {
+    builder.addCase(createRuleRequest.pending, (state) => {
       state.isLoading = true;
     });
-    builder.addCase(editRuleRequest.fulfilled, (state) => {
+    builder.addCase(createRuleRequest.fulfilled, (state) => {
       state.isLoading = false;
     });
-    builder.addCase(editRuleRequest.rejected, (state) => {
+    builder.addCase(createRuleRequest.rejected, (state) => {
       state.isLoading = false;
     });
-    builder.addCase(openEditRuleModal.pending, (state) => {
+    builder.addCase(openCreateRuleModal.pending, (state) => {
       state.isLoading = true;
       state.isOpened = true;
     });
-    builder.addCase(openEditRuleModal.fulfilled, (state, action) => {
+    builder.addCase(openCreateRuleModal.fulfilled, (state, action) => {
       state.isLoading = false;
       if (action.payload) {
-        state.id = action.payload.serverRule.id;
-        state.scheduleChats.options = action.payload.serverChats.map((chat) => ({
-          text: chat.name,
-          value: chat.id,
-        }));
-        setServerRuleToState(action.payload.serverRule, state);
+        state.scheduleChats.options = action.payload.map(
+          (chat) => ({
+            text: chat.name,
+            value: chat.id,
+          })
+        );
       }
       updateVisibleState(state);
     });
-    builder.addCase(openEditRuleModal.rejected, (state) => {
+    builder.addCase(openCreateRuleModal.rejected, (state) => {
       state.isLoading = false;
     });
   },
 });
 
 export const {
-  closeEditRuleModal,
+  closeCreateRuleModal,
   setRuleName,
   setConditionType,
   setPattern,
@@ -673,6 +593,6 @@ export const {
   setReply,
   setEmoji,
   setProbability,
-} = editRuleModalSlice.actions;
+} = createRuleModalSlice.actions;
 
-export default editRuleModalSlice.reducer;
+export default createRuleModalSlice.reducer;

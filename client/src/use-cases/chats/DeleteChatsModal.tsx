@@ -4,48 +4,48 @@ import { XIcon } from "@heroicons/react/outline";
 import { useAppSelector } from "hooks/useSelector";
 import { useAppDispatch } from "hooks/useDispatch";
 import {
-  closeRemoveJokesModal,
-  removeJokesRequest,
-} from "store/jokes/removeJokesModalSlice";
+  closeDeleteChatsModal,
+  deleteChatsRequest,
+} from "store/chat/deleteChatsModalSlice";
 
-export const RemoveJokesModal: React.FC = () => {
+export const DeleteChatsModal: React.FC = () => {
   const dispatch = useAppDispatch();
-  const removeJokesModalState = useAppSelector(
-    (state) => state.joke.removeJokesModal
+  const deleteChatModalState = useAppSelector(
+    (state) => state.chat.deleteChatsModal
   );
 
   return (
     <Modal
-      isOpen={removeJokesModalState.isOpened}
+      isOpen={deleteChatModalState.isOpened}
       isLoading={false}
       header={
         <div className="flex justify-between items-center w-full">
-          <h2 className="text-xl font-medium text-white">Remove jokes</h2>
+          <h2 className="text-xl font-medium text-white">Delete chats</h2>
           <XIcon
             className="size-6 text-slate-400 cursor-pointer"
-            onClick={() => dispatch(closeRemoveJokesModal())}
+            onClick={() => dispatch(closeDeleteChatsModal())}
           />
         </div>
       }
       content={
         <span className="text-white">
-          Do you really want to delete the selected jokes?
+          Do you really want to delete the selected chats?
         </span>
       }
       bottom={
         <div className="flex space-x-3 w-full pl-[50%]">
           <Button
-            text={removeJokesModalState.cancel.text}
+            text={deleteChatModalState.cancel.text}
             type="outline"
             color="secondary"
-            onClick={() => dispatch(closeRemoveJokesModal())}
+            onClick={() => dispatch(closeDeleteChatsModal())}
           />
           <Button
-            text={removeJokesModalState.delete.text}
+            text={deleteChatModalState.delete.text}
             type="fill"
             color="danger"
-            loading={removeJokesModalState.delete.loading}
-            onClick={() => dispatch(removeJokesRequest())}
+            loading={deleteChatModalState.delete.loading}
+            onClick={() => dispatch(deleteChatsRequest())}
           />
         </div>
       }

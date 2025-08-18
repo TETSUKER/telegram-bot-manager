@@ -4,35 +4,35 @@ import { XIcon } from "@heroicons/react/outline";
 import { useAppSelector } from "hooks/useSelector";
 import { useAppDispatch } from "hooks/useDispatch";
 import {
-  closeCreateBotModal,
-  createBotRequest,
+  closeAddBotModal,
+  addBotRequest,
   setToken,
-} from "store/bots/createBotModalSlice";
+} from "store/bots/addBotModalSlice";
 
-export const CreateBotModal: React.FC = () => {
-  const createBotModalState = useAppSelector(
-    (state) => state.bot.createBotModal
+export const AddBotModal: React.FC = () => {
+  const addBotModalState = useAppSelector(
+    (state) => state.bot.addBotModal
   );
   const dispatch = useAppDispatch();
 
   return (
     <Modal
-      isOpen={createBotModalState.isOpened}
+      isOpen={addBotModalState.isOpened}
       isLoading={false}
       header={
         <div className="flex justify-between items-center w-full">
           <h2 className="text-xl font-medium text-white">Add bot</h2>
           <XIcon
             className="size-6 text-slate-400 cursor-pointer"
-            onClick={() => dispatch(closeCreateBotModal())}
+            onClick={() => dispatch(closeAddBotModal())}
           />
         </div>
       }
       content={
         <div className="flex flex-col gap-y-2">
           <TextInput
-            label={createBotModalState.token.label}
-            disabled={createBotModalState.token.disabled}
+            label={addBotModalState.token.label}
+            disabled={addBotModalState.token.disabled}
             onChange={(value) => dispatch(setToken(value))}
           />
         </div>
@@ -40,17 +40,17 @@ export const CreateBotModal: React.FC = () => {
       bottom={
         <div className="flex space-x-3 w-full pl-[50%]">
           <Button
-            text={createBotModalState.cancel.text}
+            text={addBotModalState.cancel.text}
             type="outline"
             color="secondary"
-            onClick={() => dispatch(closeCreateBotModal())}
+            onClick={() => dispatch(closeAddBotModal())}
           />
           <Button
-            text={createBotModalState.apply.text}
+            text={addBotModalState.apply.text}
             type="fill"
             color="primary"
-            loading={createBotModalState.apply.loading}
-            onClick={() => dispatch(createBotRequest())}
+            loading={addBotModalState.apply.loading}
+            onClick={() => dispatch(addBotRequest())}
           />
         </div>
       }

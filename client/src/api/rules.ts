@@ -1,4 +1,5 @@
 import { baseUrl } from "./baseUrl";
+import { parseResponse } from "./parseResponse";
 
 export enum MessageLengthOperator {
   moreThan = ">",
@@ -109,11 +110,11 @@ export async function getRules(): Promise<ServerRule[]> {
     method: "POST",
     body: JSON.stringify({}),
   });
-  // await new Promise(resolve => setTimeout(resolve, 1000));
+  // await new Promise((resolve) => setTimeout(resolve, 1000));
   return response.json();
 }
 
-export async function editRule(rule: ServerRule): Promise<any> {
+export async function updateRule(rule: ServerRule): Promise<any> {
   const path = baseUrl + "/updateRule";
   try {
     const response = await fetch(path, {
@@ -132,7 +133,7 @@ export async function editRule(rule: ServerRule): Promise<any> {
   }
 }
 
-export async function addRule(rule: NewRule): Promise<any> {
+export async function createRule(rule: NewRule): Promise<any> {
   const path = baseUrl + "/addRule";
   try {
     const response = await fetch(path, {
@@ -141,21 +142,20 @@ export async function addRule(rule: NewRule): Promise<any> {
     });
 
     if (!response.ok) {
-      const result = await response.json();
-      throw result.error;
+      throw await parseResponse(response);
     } else {
-      return response;
+      return parseResponse(response);
     }
   } catch (err) {
     throw err;
   }
 }
 
-export async function removeRules(ids: number[]): Promise<Response> {
-  const path = baseUrl + '/removeRules';
+export async function deleteRules(ids: number[]): Promise<Response> {
+  const path = baseUrl + "/removeRules";
   const response = await fetch(path, {
     method: "POST",
-    body: JSON.stringify({ids}),
+    body: JSON.stringify({ ids }),
   });
   // await new Promise(resolve => setTimeout(resolve, 1000));
   return response;

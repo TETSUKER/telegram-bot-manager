@@ -3,24 +3,24 @@ import { Button, Modal } from "components";
 import { XIcon } from "@heroicons/react/outline";
 import { useAppSelector } from "hooks/useSelector";
 import { useAppDispatch } from "hooks/useDispatch";
-import { closeRemoveRulesModal, removeRulesRequest } from 'store/rules/removeRulesModalSlice';
+import { closeDeleteRulesModal, deleteRulesRequest } from 'store/rules/deleteRulesModalSlice';
 
-export const RemoveRulesModal: React.FC = () => {
+export const DeleteRulesModal: React.FC = () => {
   const dispatch = useAppDispatch();
-  const removeRuleModalState = useAppSelector(
-    (state) => state.rule.removeRulesModal
+  const deleteRuleModalState = useAppSelector(
+    (state) => state.rule.deleteRulesModal
   );
 
   return (
     <Modal
-      isOpen={removeRuleModalState.isOpened}
+      isOpen={deleteRuleModalState.isOpened}
       isLoading={false}
       header={
         <div className="flex justify-between items-center w-full">
-          <h2 className="text-xl font-medium text-white">Remove rules</h2>
+          <h2 className="text-xl font-medium text-white">Delete rules</h2>
           <XIcon
             className="size-6 text-slate-400 cursor-pointer"
-            onClick={() => dispatch(closeRemoveRulesModal())}
+            onClick={() => dispatch(closeDeleteRulesModal())}
           />
         </div>
       }
@@ -32,17 +32,17 @@ export const RemoveRulesModal: React.FC = () => {
       bottom={
         <div className="flex space-x-3 w-full pl-[50%]">
           <Button
-            text={removeRuleModalState.cancel.text}
+            text={deleteRuleModalState.cancel.text}
             type="outline"
             color="secondary"
-            onClick={() => dispatch(closeRemoveRulesModal())}
+            onClick={() => dispatch(closeDeleteRulesModal())}
           />
           <Button
-            text={removeRuleModalState.delete.text}
+            text={deleteRuleModalState.delete.text}
             type="fill"
             color="danger"
-            loading={removeRuleModalState.delete.loading}
-            onClick={() => dispatch(removeRulesRequest())}
+            loading={deleteRuleModalState.delete.loading}
+            onClick={() => dispatch(deleteRulesRequest())}
           />
         </div>
       }

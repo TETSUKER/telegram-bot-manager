@@ -1,17 +1,19 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ButtonState, TextInputState, ThunkApiConfig } from "store/interfaces";
-import { addJoke } from "api/jokes";
+import { updateJoke, UpdateJoke } from "api/jokes";
 import { updateJokes } from "./jokesTableSlice";
 
-interface AddJokeModalSliceState {
+interface UpdateJokeModalSliceState {
   isOpened: boolean;
+  id: number;
   text: TextInputState;
   apply: ButtonState;
   cancel: ButtonState;
 }
 
-const initialState: AddJokeModalSliceState = {
+const initialState: UpdateJokeModalSliceState = {
   isOpened: false,
+  id: 0,
   text: {
     value: "",
     label: "Joke text",
@@ -31,26 +33,29 @@ const initialState: AddJokeModalSliceState = {
   },
 };
 
-export const addJokeRequest = createAsyncThunk<
+export const updateJokeRequest = createAsyncThunk<
   Promise<void>,
   void,
   ThunkApiConfig
->("addJokeModel/update", async (_, { dispatch, getState }) => {
+>("updateJokeModel/update", async (_, { dispatch, getState }) => {
   const state = getState();
-  await addJoke({
-    text: state.joke.addJokeModal.text.value,
+  await updateJoke({
+    id: state.joke.updateJokeModal.id,
+    text: state.joke.updateJokeModal.text.value,
   });
   dispatch(updateJokes());
 });
 
-export const addJokeModalSlice = createSlice({
-  name: "addJokeModel",
+export const updateJokeModalSlice = createSlice({
+  name: "updateJokeModel",
   initialState,
   reducers: {
-    openAddJokeModal(state): void {
+    openUpdateJokeModal(state, action: PayloadAction<UpdateJoke>): void {
+      state.id = action.payload.id;
+      state.text.value = action.payload.text;
       state.isOpened = true;
     },
-    closeAddJokeModal(state): void {
+    closeUpdateJokeModal(state): void {
       state.isOpened = false;
     },
     setJokeText(state, action: PayloadAction<string>): void {
@@ -58,23 +63,23 @@ export const addJokeModalSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(addJokeRequest.pending, (state) => {
+    builder.addCase(updateJokeRequest.pending, (state) => {
       state.text.disabled = true;
       state.apply.loading = true;
     });
-    builder.addCase(addJokeRequest.fulfilled, (state) => {
+    builder.addCase(updateJokeRequest.fulfilled, (state) => {
       state.isOpened = false;
       state.text.disabled = false;
       state.apply.loading = false;
     });
-    builder.addCase(addJokeRequest.rejected, (state) => {
+    builder.addCase(updateJokeRequest.rejected, (state) => {
       state.text.disabled = false;
       state.apply.loading = false;
     });
   },
 });
 
-export const { openAddJokeModal, closeAddJokeModal, setJokeText } =
-  addJokeModalSlice.actions;
+export const { openUpdateJokeModal, closeUpdateJokeModal, setJokeText } =
+  updateJokeModalSlice.actions;
 
-export default addJokeModalSlice.reducer;
+export default updateJokeModalSlice.reducer;

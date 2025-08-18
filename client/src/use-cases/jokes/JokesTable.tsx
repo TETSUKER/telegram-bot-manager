@@ -9,7 +9,7 @@ import { useAppDispatch } from "hooks/useDispatch";
 import { useAppSelector } from "hooks/useSelector";
 import React from "react";
 import { Status } from "store/interfaces";
-import { openEditJokeModal } from "store/jokes/editJokeModalSlice";
+import { openUpdateJokeModal } from "store/jokes/updateJokeModalSlice";
 import {
   toggleSelectAll,
   toggleSelectItem,
@@ -54,7 +54,7 @@ export const JokesTable: React.FC = () => {
           <span
             onClick={() =>
               dispatch(
-                openEditJokeModal({
+                openUpdateJokeModal({
                   id: joke.id,
                   text: joke.text,
                 })

@@ -12,7 +12,7 @@ export interface NewChat {
   chatId: string;
 }
 
-export interface EditChat {
+export interface UpdateChat {
   id: number;
   chatId?: string;
   name?: string;
@@ -38,7 +38,7 @@ export async function addChat(body: NewChat): Promise<Response> {
   return response;
 }
 
-export async function removeChats(ids: number[]): Promise<Response> {
+export async function deleteChats(ids: number[]): Promise<Response> {
   const path = baseUrl + '/removeChat';
   const response = await fetch(path, {
     method: "POST",
@@ -48,7 +48,7 @@ export async function removeChats(ids: number[]): Promise<Response> {
   return response;
 }
 
-export async function editChat(chat: EditChat): Promise<Response> {
+export async function updateChat(chat: UpdateChat): Promise<Response> {
   const path = baseUrl + '/updateChat';
   const response = await fetch(path, {
     method: "POST",

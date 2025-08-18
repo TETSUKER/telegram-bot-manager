@@ -3,15 +3,15 @@ import { Button } from "components";
 import { useAppDispatch } from "hooks/useDispatch";
 import { useAppSelector } from "hooks/useSelector";
 import React from "react";
+import { openDeleteChatsModal } from "store/chat/deleteChatsModalSlice";
 import { Status } from "store/interfaces";
-import { openRemoveJokesModal } from "store/jokes/removeJokesModalSlice";
 
-export const RemoveJokesButton: React.FC = () => {
+export const DeleteChatsButton: React.FC = () => {
   const dispatch = useAppDispatch();
-  const jokesTableState = useAppSelector((state) => state.joke.jokesTable);
+  const chatsTableState = useAppSelector((state) => state.chat.chatsTable);
   const isButtonDisabled =
-    jokesTableState.status === Status.LOADING ||
-    jokesTableState.selectedIds.length === 0;
+    chatsTableState.status === Status.LOADING ||
+    chatsTableState.selectedIds.length === 0;
 
   return (
     <Button
@@ -19,7 +19,7 @@ export const RemoveJokesButton: React.FC = () => {
       type="icon"
       color="danger"
       onClick={() =>
-        dispatch(openRemoveJokesModal(jokesTableState.selectedIds))
+        dispatch(openDeleteChatsModal(chatsTableState.selectedIds))
       }
       disabled={isButtonDisabled}
     />

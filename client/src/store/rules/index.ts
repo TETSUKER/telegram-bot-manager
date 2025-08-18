@@ -1,14 +1,14 @@
 import { combineReducers } from "@reduxjs/toolkit";
 import { rulesTableSlice } from "./rulesTableSlice";
-import { editRuleModalSlice } from "./editRuleModalSlice";
-import { addRuleModalSlice } from "./addRuleModalSlice";
-import { removeRulesModalSlice } from './removeRulesModalSlice';
+import { updateRuleModalSlice } from "./updateRuleModalSlice";
+import { createRuleModalSlice } from "./createRuleModalSlice";
+import { deleteRulesModalSlice } from './deleteRulesModalSlice';
 
 const rulesReducer = combineReducers({
   rulesTable: rulesTableSlice.reducer,
-  editRuleModal: editRuleModalSlice.reducer,
-  addRuleModal: addRuleModalSlice.reducer,
-  removeRulesModal: removeRulesModalSlice.reducer,
+  updateRuleModal: updateRuleModalSlice.reducer,
+  createRuleModal: createRuleModalSlice.reducer,
+  deleteRulesModal: deleteRulesModalSlice.reducer,
 });
 
 export default rulesReducer;

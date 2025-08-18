@@ -1,12 +1,12 @@
 import React from "react";
 import {
   RulesTable,
-  AddRuleModal,
+  CreateRuleModal,
   AddRuleButton,
-  EditRuleModal,
+  UpdateRuleModal,
   RefreshRulesButton,
   RemoveRulesButton,
-  RemoveRulesModal,
+  DeleteRulesModal,
 } from "use-cases/rules";
 
 export const Rules: React.FC = () => {
@@ -19,9 +19,9 @@ export const Rules: React.FC = () => {
       </div>
       <RulesTable />
 
-      <AddRuleModal />
-      <EditRuleModal />
-      <RemoveRulesModal />
+      <CreateRuleModal />
+      <UpdateRuleModal />
+      <DeleteRulesModal />
     </>
   );
 };

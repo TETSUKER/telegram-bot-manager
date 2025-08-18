@@ -1,8 +1,8 @@
 import React from "react";
 import {
   BotsTable,
-  CreateBotButton,
-  CreateBotModal,
+  AddBotButton,
+  AddBotModal,
   UpdateBotModal,
   RefreshBotsTableButton,
   DeleteBotsButton,
@@ -14,12 +14,12 @@ export const Bots: React.FC = () => {
     <>
       <div className="flex gap-x-2 py-[10px]">
         <RefreshBotsTableButton />
-        <CreateBotButton />
+        <AddBotButton />
         <DeleteBotsButton />
       </div>
       <BotsTable />
 
-      <CreateBotModal />
+      <AddBotModal />
       <UpdateBotModal />
       <DeleteBotsModal />
     </>

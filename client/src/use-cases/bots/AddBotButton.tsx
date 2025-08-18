@@ -3,20 +3,20 @@ import { Button } from "components";
 import { useAppDispatch } from "hooks/useDispatch";
 import { useAppSelector } from "hooks/useSelector";
 import React from "react";
+import { openAddBotModal } from "store/bots/addBotModalSlice";
 import { Status } from "store/interfaces";
-import { openAddJokeModal } from "store/jokes/addJokeModalSlice";
 
-export const AddJokeButton: React.FC = () => {
+export const AddBotButton: React.FC = () => {
   const dispatch = useAppDispatch();
-  const jokesTableState = useAppSelector((state) => state.joke.jokesTable);
-  const isButtonDisabled = jokesTableState.status === Status.LOADING;
+  const botsTableState = useAppSelector((state) => state.bot.botsTable);
+  const isButtonDisabled = botsTableState.status === Status.LOADING;
 
   return (
     <Button
       icon={<PlusIcon />}
       type="icon"
       color="secondary"
-      onClick={() => dispatch(openAddJokeModal())}
+      onClick={() => dispatch(openAddBotModal())}
       disabled={isButtonDisabled}
     />
   );

@@ -3,52 +3,52 @@ import { Button, Modal, TextInput } from "components";
 import { XIcon } from "@heroicons/react/outline";
 import { useAppSelector } from "hooks/useSelector";
 import { useAppDispatch } from "hooks/useDispatch";
-import {
-  addJokeRequest,
-  closeAddJokeModal,
-  setJokeText,
-} from "store/jokes/addJokeModalSlice";
+import { closeUpdateJokeModal, updateJokeRequest } from 'store/jokes/updateJokeModalSlice';
+import { setJokeText } from 'store/jokes/updateJokeModalSlice';
 
-export const AddJokeModal: React.FC = () => {
-  const addJokeModalState = useAppSelector((state) => state.joke.addJokeModal);
+export const UpdateJokeModal: React.FC = () => {
+  const updateJokeModalState = useAppSelector(
+    (state) => state.joke.updateJokeModal
+  );
   const dispatch = useAppDispatch();
 
   return (
     <Modal
-      isOpen={addJokeModalState.isOpened}
+      isOpen={updateJokeModalState.isOpened}
       isLoading={false}
       header={
         <div className="flex justify-between items-center w-full">
-          <h2 className="text-xl font-medium text-white">Add joke</h2>
+          <h2 className="text-xl font-medium text-white">Update joke</h2>
           <XIcon
             className="size-6 text-slate-400 cursor-pointer"
-            onClick={() => dispatch(closeAddJokeModal())}
+            onClick={() => dispatch(closeUpdateJokeModal())}
           />
         </div>
       }
       content={
         <div className="flex flex-col gap-y-2">
           <TextInput
-            label={addJokeModalState.text.label}
-            disabled={addJokeModalState.text.disabled}
+            label={updateJokeModalState.text.label}
+            disabled={updateJokeModalState.text.disabled}
             onChange={(value) => dispatch(setJokeText(value))}
+            initialValue={updateJokeModalState.text.value}
           />
         </div>
       }
       bottom={
         <div className="flex space-x-3 w-full pl-[50%]">
           <Button
-            text={addJokeModalState.cancel.text}
             type="outline"
             color="secondary"
-            onClick={() => dispatch(closeAddJokeModal())}
+            text={updateJokeModalState.cancel.text}
+            onClick={() => dispatch(closeUpdateJokeModal())}
           />
           <Button
-            text={addJokeModalState.apply.text}
             type="fill"
             color="primary"
-            loading={addJokeModalState.apply.loading}
-            onClick={() => dispatch(addJokeRequest())}
+            text={updateJokeModalState.apply.text}
+            loading={updateJokeModalState.apply.loading}
+            onClick={() => dispatch(updateJokeRequest())}
           />
         </div>
       }

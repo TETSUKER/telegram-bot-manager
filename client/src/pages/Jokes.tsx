@@ -1,12 +1,12 @@
 import React from "react";
 import {
   JokesTable,
-  RemoveJokesModal,
+  DeleteJokesModal,
   RefreshJokesButton,
-  RemoveJokesButton,
-  AddJokeButton,
-  AddJokeModal,
-  EditJokeModal,
+  DeleteJokesButton,
+  CreateJokeButton,
+  CreateJokeModal,
+  UpdateJokeModal,
 } from "use-cases/jokes";
 
 export const Jokes: React.FC = () => {
@@ -14,14 +14,14 @@ export const Jokes: React.FC = () => {
     <>
       <div className="flex gap-x-2 py-[10px]">
         <RefreshJokesButton />
-        <AddJokeButton />
-        <RemoveJokesButton />
+        <CreateJokeButton />
+        <DeleteJokesButton />
       </div>
       <JokesTable />
 
-      <AddJokeModal />
-      <EditJokeModal />
-      <RemoveJokesModal />
+      <CreateJokeModal />
+      <UpdateJokeModal />
+      <DeleteJokesModal />
     </>
   );
 };

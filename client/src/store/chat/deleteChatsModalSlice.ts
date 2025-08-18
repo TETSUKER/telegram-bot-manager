@@ -1,16 +1,16 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { removeChats } from "api/chat";
+import { deleteChats } from "api/chat";
 import { updateChats, clearSelection } from "./chatsTableSlice";
 import { ButtonState, ThunkApiConfig } from "store/interfaces";
 
-interface RemoveChatsModalSliceState {
+interface DeleteChatsModalSliceState {
   isOpened: boolean;
   chatIds: number[];
   delete: ButtonState;
   cancel: ButtonState;
 }
 
-const initialState: RemoveChatsModalSliceState = {
+const initialState: DeleteChatsModalSliceState = {
   isOpened: false,
   chatIds: [],
   delete: {
@@ -25,44 +25,44 @@ const initialState: RemoveChatsModalSliceState = {
   },
 };
 
-export const removeChatsRequest = createAsyncThunk<
+export const deleteChatsRequest = createAsyncThunk<
   Promise<void>,
   void,
   ThunkApiConfig
->("removeChatsModal/remove", async (_, { dispatch, getState }) => {
-  const ids = getState().chat.removeChatModal.chatIds;
-  await removeChats(ids);
+>("deleteChatsModal/delete", async (_, { dispatch, getState }) => {
+  const ids = getState().chat.deleteChatsModal.chatIds;
+  await deleteChats(ids);
   dispatch(clearSelection());
   dispatch(updateChats());
 });
 
-export const removeChatsModalSlice = createSlice({
-  name: "removeChatsModal",
+export const deleteChatsModalSlice = createSlice({
+  name: "deleteChatsModal",
   initialState,
   reducers: {
-    openRemoveChatsModal(state, action: PayloadAction<number[]>): void {
+    openDeleteChatsModal(state, action: PayloadAction<number[]>): void {
       state.isOpened = true;
       state.chatIds = action.payload;
     },
-    closeRemoveChatsModal(state): void {
+    closeDeleteChatsModal(state): void {
       state.isOpened = false;
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(removeChatsRequest.pending, (state) => {
+    builder.addCase(deleteChatsRequest.pending, (state) => {
       state.delete.loading = true;
     });
-    builder.addCase(removeChatsRequest.fulfilled, (state) => {
+    builder.addCase(deleteChatsRequest.fulfilled, (state) => {
       state.delete.loading = false;
       state.isOpened = false;
     });
-    builder.addCase(removeChatsRequest.rejected, (state) => {
+    builder.addCase(deleteChatsRequest.rejected, (state) => {
       state.delete.loading = false;
     });
   },
 });
 
-export const { openRemoveChatsModal, closeRemoveChatsModal } =
-  removeChatsModalSlice.actions;
+export const { openDeleteChatsModal, closeDeleteChatsModal } =
+  deleteChatsModalSlice.actions;
 
-export default removeChatsModalSlice.reducer;
+export default deleteChatsModalSlice.reducer;

@@ -4,44 +4,44 @@ import { XIcon } from "@heroicons/react/outline";
 import { useAppSelector } from "hooks/useSelector";
 import { useAppDispatch } from "hooks/useDispatch";
 import {
-  closeEditChatModal,
-  editChatRequest,
+  closeUpdateChatModal,
+  updateChatRequest,
   setChatName,
   setChatId,
-} from "store/chat/editChatModalSlice";
+} from "store/chat/updateChatModalSlice";
 
-export const EditChatModal: React.FC = () => {
-  const editChatModalState = useAppSelector(
-    (state) => state.chat.editChatModal
+export const UpdateChatModal: React.FC = () => {
+  const updateChatModalState = useAppSelector(
+    (state) => state.chat.updateChatModal
   );
   const dispatch = useAppDispatch();
 
   return (
     <Modal
-      isOpen={editChatModalState.isOpened}
+      isOpen={updateChatModalState.isOpened}
       isLoading={false}
       header={
         <div className="flex justify-between items-center w-full">
-          <h2 className="text-xl font-medium text-white">Edit chat</h2>
+          <h2 className="text-xl font-medium text-white">Update chat</h2>
           <XIcon
             className="size-6 text-slate-400 cursor-pointer"
-            onClick={() => dispatch(closeEditChatModal())}
+            onClick={() => dispatch(closeUpdateChatModal())}
           />
         </div>
       }
       content={
         <div className="flex flex-col gap-y-2">
           <TextInput
-            label={editChatModalState.name.label}
-            disabled={editChatModalState.name.disabled}
+            label={updateChatModalState.name.label}
+            disabled={updateChatModalState.name.disabled}
             onChange={(value) => dispatch(setChatName(value))}
-            initialValue={editChatModalState.name.value}
+            initialValue={updateChatModalState.name.value}
           />
           <TextInput
-            label={editChatModalState.chatId.label}
-            disabled={editChatModalState.chatId.disabled}
+            label={updateChatModalState.chatId.label}
+            disabled={updateChatModalState.chatId.disabled}
             onChange={(value) => dispatch(setChatId(value))}
-            initialValue={editChatModalState.chatId.value}
+            initialValue={updateChatModalState.chatId.value}
           />
         </div>
       }
@@ -50,15 +50,15 @@ export const EditChatModal: React.FC = () => {
           <Button
             type="outline"
             color="secondary"
-            text={editChatModalState.cancel.text}
-            onClick={() => dispatch(closeEditChatModal())}
+            text={updateChatModalState.cancel.text}
+            onClick={() => dispatch(closeUpdateChatModal())}
           />
           <Button
             type="fill"
             color="primary"
-            text={editChatModalState.apply.text}
-            loading={editChatModalState.apply.loading}
-            onClick={() => dispatch(editChatRequest())}
+            text={updateChatModalState.apply.text}
+            loading={updateChatModalState.apply.loading}
+            onClick={() => dispatch(updateChatRequest())}
           />
         </div>
       }

@@ -1,14 +1,14 @@
 import { combineReducers } from "@reduxjs/toolkit";
 import { jokesTableSlice } from './jokesTableSlice';
-import { addJokeModalSlice } from './addJokeModalSlice';
-import { editJokeModalSlice } from './editJokeModalSlice';
-import { removeJokesModalSlice } from './removeJokesModalSlice';
+import { createJokeModalSlice } from './createJokeModalSlice';
+import { updateJokeModalSlice } from './updateJokeModalSlice';
+import { deleteJokesModalSlice } from './deleteJokesModalSlice';
 
 const jokesReducer = combineReducers({
   jokesTable: jokesTableSlice.reducer,
-  addJokeModal: addJokeModalSlice.reducer,
-  editJokeModal: editJokeModalSlice.reducer,
-  removeJokesModal: removeJokesModalSlice.reducer,
+  createJokeModal: createJokeModalSlice.reducer,
+  updateJokeModal: updateJokeModalSlice.reducer,
+  deleteJokesModal: deleteJokesModalSlice.reducer,
 });
 
 export default jokesReducer;

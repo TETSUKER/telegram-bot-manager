@@ -2,10 +2,10 @@ import React from "react";
 import {
   ChatsTable,
   AddChatModal,
-  RemoveChatsModal,
-  EditChatModal,
+  DeleteChatsModal,
+  UpdateChatModal,
   AddChatButton,
-  RemoveChatsButton,
+  DeleteChatsButton,
   RefreshChatsButton,
 } from "use-cases";
 
@@ -15,13 +15,13 @@ export const Chats: React.FC = () => {
       <div className="flex gap-x-2 py-[10px]">
         <RefreshChatsButton />
         <AddChatButton />
-        <RemoveChatsButton />
+        <DeleteChatsButton />
       </div>
       <ChatsTable />
 
       <AddChatModal />
-      <RemoveChatsModal />
-      <EditChatModal />
+      <DeleteChatsModal />
+      <UpdateChatModal />
     </>
   );
 };

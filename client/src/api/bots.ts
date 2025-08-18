@@ -41,7 +41,7 @@ export async function getBots(): Promise<ServerBot[]> {
   }
 }
 
-export async function createBot(token: string): Promise<Response> {
+export async function addBot(token: string): Promise<Response> {
   const path = baseUrl + '/addBot';
   try {
     const response = await fetch(path, {

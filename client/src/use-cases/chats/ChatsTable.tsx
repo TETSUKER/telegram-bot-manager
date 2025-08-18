@@ -10,7 +10,7 @@ import { useAppSelector } from "hooks/useSelector";
 import { useAppDispatch } from "hooks/useDispatch";
 import { updateChats } from "store/chat/chatsTableSlice";
 import { toggleSelectItem, toggleSelectAll } from "store/chat/chatsTableSlice";
-import { openEditChatModal } from "store/chat/editChatModalSlice";
+import { openUpdateChatModal } from "store/chat/updateChatModalSlice";
 
 interface ChatTableRow extends ServerChat {
   checkbox: React.JSX.Element;
@@ -50,7 +50,7 @@ export const ChatsTable: React.FC = () => {
           <span
             onClick={() =>
               dispatch(
-                openEditChatModal({
+                openUpdateChatModal({
                   id: chat.id,
                   name: chat.name,
                   chatId: chat.chatId,

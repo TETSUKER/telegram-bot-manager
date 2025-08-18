@@ -11,22 +11,23 @@ import {
 } from "store/interfaces";
 import { updateRules } from "./rulesTableSlice";
 import {
-  addRule,
   DayOfWeek,
+  updateRule,
   MessageLengthOperator,
   Month,
-  NewRule,
   RuleCondition,
   RuleConditionType,
   RuleResponse,
   RuleResponseType,
   ScheduleType,
+  ServerRule,
 } from "api/rules";
 import { getChats, ServerChat } from "api/chat";
 
-interface AddRuleModalSliceState {
+interface UpdateRuleModalSliceState {
   isOpened: boolean;
   isLoading: boolean;
+  id: number;
   name: TextInputState;
   conditionType: SelectorInputState<RuleConditionType>;
   pattern: TextInputState;
@@ -49,7 +50,7 @@ interface AddRuleModalSliceState {
   cancel: ButtonState;
 }
 
-function getServerRuleFromState(state: AddRuleModalSliceState): NewRule {
+function getServerRuleFromState(state: UpdateRuleModalSliceState): ServerRule {
   const getCondition = (): RuleCondition => {
     if (state.conditionType.value === RuleConditionType.schedule) {
       if (state.scheduleType.value === ScheduleType.weekly) {
@@ -143,6 +144,7 @@ function getServerRuleFromState(state: AddRuleModalSliceState): NewRule {
   };
 
   return {
+    id: state.id,
     name: state.name.value,
     condition: getCondition(),
     response: getResponse(),
@@ -150,16 +152,16 @@ function getServerRuleFromState(state: AddRuleModalSliceState): NewRule {
   };
 }
 
-export const addRuleRequest = createAsyncThunk<
+export const updateRuleRequest = createAsyncThunk<
   Promise<void>,
   void,
   ThunkApiConfig
->("addRuleModel/add", async (_, { dispatch, getState }) => {
+>("updateRuleModal/update", async (_, { dispatch, getState }) => {
   try {
     const state = getState();
-    const rule = getServerRuleFromState(state.rule.addRuleModal);
-    await addRule(rule);
-    dispatch(closeAddRuleModal());
+    const rule = getServerRuleFromState(state.rule.updateRuleModal);
+    await updateRule(rule);
+    dispatch(closeUpdateRuleModal());
     dispatch(updateRules());
   } catch (err) {
     const errMessage = (err as Error).message ?? "Unknown error";
@@ -167,22 +169,30 @@ export const addRuleRequest = createAsyncThunk<
   }
 });
 
-export const openAddRuleModal = createAsyncThunk<
-  ServerChat[] | void,
-  void,
+export const openUpdateRuleModal = createAsyncThunk<
+  {
+    serverRule: ServerRule;
+    serverChats: ServerChat[];
+  } | void,
+  ServerRule,
   ThunkApiConfig
->("addRuleModal/open", async (_, { rejectWithValue, dispatch }) => {
+>("openUpdateRuleModel/open", async (rule, { rejectWithValue }) => {
   try {
-    return await getChats();
+    const chats = await getChats();
+    return {
+      serverRule: rule,
+      serverChats: chats,
+    };
   } catch (err) {
     const errMessage = (err as Error).message ?? "Unknown error";
     rejectWithValue(errMessage);
   }
 });
 
-const initialState: AddRuleModalSliceState = {
+const initialState: UpdateRuleModalSliceState = {
   isOpened: false,
   isLoading: false,
+  id: 0,
   name: {
     value: "",
     label: "Rule name",
@@ -369,7 +379,7 @@ const initialState: AddRuleModalSliceState = {
   },
 };
 
-function updateVisibleState(state: AddRuleModalSliceState): void {
+function updateVisibleState(state: UpdateRuleModalSliceState): void {
   if (state.conditionType.value === RuleConditionType.regex) {
     state.pattern.visible = true;
     state.lengthValue.visible = false;
@@ -465,11 +475,86 @@ function updateVisibleState(state: AddRuleModalSliceState): void {
   }
 }
 
-export const addRuleModalSlice = createSlice({
-  name: "addRuleModel",
+function setServerRuleToState(
+  serverRule: ServerRule,
+  state: UpdateRuleModalSliceState
+): void {
+  state.name.value = serverRule.name;
+  state.probability.value = serverRule.probability ?? 100;
+
+  if (serverRule.condition.type === RuleConditionType.schedule) {
+    state.conditionType.value = RuleConditionType.schedule;
+    const hours = serverRule.condition.schedule.hour
+      .toString()
+      .padStart(2, "0");
+    const minutes = serverRule.condition.schedule.minute
+      .toString()
+      .padStart(2, "0");
+    const scheduleTime = `${hours}:${minutes}`;
+    state.scheduleTime.value = scheduleTime;
+    state.scheduleChats.value = serverRule.condition.scheduleChatIds;
+
+    if (serverRule.condition.schedule.type === ScheduleType.weekly) {
+      state.scheduleType.value = ScheduleType.weekly;
+      state.scheduleDayOfWeek.value = serverRule.condition.schedule.dayOfWeek;
+    }
+
+    if (serverRule.condition.schedule.type === ScheduleType.annually) {
+      state.scheduleType.value = ScheduleType.annually;
+      state.scheduleDay.value = serverRule.condition.schedule.day;
+      state.scheduleMonth.value = serverRule.condition.schedule.month;
+    }
+  }
+
+  if (serverRule.condition.type === RuleConditionType.regex) {
+    state.conditionType.value = RuleConditionType.regex;
+    state.pattern.value = serverRule.condition.pattern;
+  }
+
+  if (serverRule.condition.type === RuleConditionType.command) {
+    state.conditionType.value = RuleConditionType.command;
+    state.commandName.value = serverRule.condition.name;
+  }
+
+  if (serverRule.condition.type === RuleConditionType.length) {
+    state.conditionType.value = RuleConditionType.length;
+    state.lengthValue.value = serverRule.condition.value;
+    state.lengthOperator.value = serverRule.condition.operator;
+  }
+
+  if (serverRule.response.type === RuleResponseType.message) {
+    state.responseType.value = RuleResponseType.message;
+    state.text.value = serverRule.response.text;
+  }
+
+  if (serverRule.response.type === RuleResponseType.emoji) {
+    state.responseType.value = RuleResponseType.emoji;
+    state.emoji.value = serverRule.response.emoji;
+  }
+
+  if (serverRule.response.type === RuleResponseType.sticker) {
+    state.responseType.value = RuleResponseType.sticker;
+    state.stickerId.value = serverRule.response.stickerId;
+  }
+
+  if (serverRule.response.type === RuleResponseType.find_joke) {
+    state.responseType.value = RuleResponseType.find_joke;
+  }
+
+  if (serverRule.response.type === RuleResponseType.joke_rating) {
+    state.responseType.value = RuleResponseType.joke_rating;
+  }
+
+  if (serverRule.response.type === RuleResponseType.random_joke) {
+    state.responseType.value = RuleResponseType.random_joke;
+  }
+}
+
+export const updateRuleModalSlice = createSlice({
+  name: "updateRuleModal",
   initialState,
   reducers: {
-    closeAddRuleModal(): AddRuleModalSliceState {
+    closeUpdateRuleModal(): UpdateRuleModalSliceState {
       return {
         ...initialState,
         isOpened: false,
@@ -537,39 +622,39 @@ export const addRuleModalSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(addRuleRequest.pending, (state) => {
+    builder.addCase(updateRuleRequest.pending, (state) => {
       state.isLoading = true;
     });
-    builder.addCase(addRuleRequest.fulfilled, (state) => {
+    builder.addCase(updateRuleRequest.fulfilled, (state) => {
       state.isLoading = false;
     });
-    builder.addCase(addRuleRequest.rejected, (state) => {
+    builder.addCase(updateRuleRequest.rejected, (state) => {
       state.isLoading = false;
     });
-    builder.addCase(openAddRuleModal.pending, (state) => {
+    builder.addCase(openUpdateRuleModal.pending, (state) => {
       state.isLoading = true;
       state.isOpened = true;
     });
-    builder.addCase(openAddRuleModal.fulfilled, (state, action) => {
+    builder.addCase(openUpdateRuleModal.fulfilled, (state, action) => {
       state.isLoading = false;
       if (action.payload) {
-        state.scheduleChats.options = action.payload.map(
-          (chat) => ({
-            text: chat.name,
-            value: chat.id,
-          })
-        );
+        state.id = action.payload.serverRule.id;
+        state.scheduleChats.options = action.payload.serverChats.map((chat) => ({
+          text: chat.name,
+          value: chat.id,
+        }));
+        setServerRuleToState(action.payload.serverRule, state);
       }
       updateVisibleState(state);
     });
-    builder.addCase(openAddRuleModal.rejected, (state) => {
+    builder.addCase(openUpdateRuleModal.rejected, (state) => {
       state.isLoading = false;
     });
   },
 });
 
 export const {
-  closeAddRuleModal,
+  closeUpdateRuleModal,
   setRuleName,
   setConditionType,
   setPattern,
@@ -588,6 +673,6 @@ export const {
   setReply,
   setEmoji,
   setProbability,
-} = addRuleModalSlice.actions;
+} = updateRuleModalSlice.actions;
 
-export default addRuleModalSlice.reducer;
+export default updateRuleModalSlice.reducer;

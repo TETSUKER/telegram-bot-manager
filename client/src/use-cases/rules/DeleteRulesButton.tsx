@@ -4,7 +4,7 @@ import { useAppDispatch } from 'hooks/useDispatch';
 import { useAppSelector } from "hooks/useSelector";
 import React from "react";
 import { Status } from "store/interfaces";
-import { openRemoveRulesModal } from 'store/rules/removeRulesModalSlice';
+import { openDeleteRulesModal } from 'store/rules/deleteRulesModalSlice';
 
 export const RemoveRulesButton: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -16,7 +16,7 @@ export const RemoveRulesButton: React.FC = () => {
 
   return (
     <Button
-      onClick={() => dispatch(openRemoveRulesModal(rulesTableState.selectedIds))}
+      onClick={() => dispatch(openDeleteRulesModal(rulesTableState.selectedIds))}
       icon={<TrashIcon />}
       type="icon"
       color="danger"

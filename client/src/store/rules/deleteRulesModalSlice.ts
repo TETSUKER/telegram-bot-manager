@@ -1,16 +1,16 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ButtonState, ThunkApiConfig } from "store/interfaces";
-import { removeRules } from 'api/rules';
+import { deleteRules } from 'api/rules';
 import { clearSelection, updateRules } from './rulesTableSlice';
 
-interface RemoveRulesModalSliceState {
+interface DeleteRulesModalSliceState {
   isOpened: boolean;
   rulesIds: number[];
   delete: ButtonState;
   cancel: ButtonState;
 }
 
-const initialState: RemoveRulesModalSliceState = {
+const initialState: DeleteRulesModalSliceState = {
   isOpened: false,
   rulesIds: [],
   delete: {
@@ -25,44 +25,44 @@ const initialState: RemoveRulesModalSliceState = {
   },
 };
 
-export const removeRulesRequest = createAsyncThunk<
+export const deleteRulesRequest = createAsyncThunk<
   Promise<void>,
   void,
   ThunkApiConfig
->("removeRulesModal/remove", async (_, { dispatch, getState }) => {
-  const ids = getState().rule.removeRulesModal.rulesIds;
-  await removeRules(ids);
+>("deleteRulesModal/delete", async (_, { dispatch, getState }) => {
+  const ids = getState().rule.deleteRulesModal.rulesIds;
+  await deleteRules(ids);
   dispatch(clearSelection());
   dispatch(updateRules());
 });
 
-export const removeRulesModalSlice = createSlice({
-  name: "removeRulesModal",
+export const deleteRulesModalSlice = createSlice({
+  name: "deleteRulesModal",
   initialState,
   reducers: {
-    openRemoveRulesModal(state, action: PayloadAction<number[]>): void {
+    openDeleteRulesModal(state, action: PayloadAction<number[]>): void {
       state.isOpened = true;
       state.rulesIds = action.payload;
     },
-    closeRemoveRulesModal(state): void {
+    closeDeleteRulesModal(state): void {
       state.isOpened = false;
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(removeRulesRequest.pending, (state) => {
+    builder.addCase(deleteRulesRequest.pending, (state) => {
       state.delete.loading = true;
     });
-    builder.addCase(removeRulesRequest.fulfilled, (state) => {
+    builder.addCase(deleteRulesRequest.fulfilled, (state) => {
       state.delete.loading = false;
       state.isOpened = false;
     });
-    builder.addCase(removeRulesRequest.rejected, (state) => {
+    builder.addCase(deleteRulesRequest.rejected, (state) => {
       state.delete.loading = false;
     });
   },
 });
 
-export const { openRemoveRulesModal, closeRemoveRulesModal } =
-  removeRulesModalSlice.actions;
+export const { openDeleteRulesModal, closeDeleteRulesModal } =
+  deleteRulesModalSlice.actions;
 
-export default removeRulesModalSlice.reducer;
+export default deleteRulesModalSlice.reducer;
