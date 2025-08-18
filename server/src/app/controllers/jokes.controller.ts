@@ -16,23 +16,23 @@ export class JokesController {
 
   public async addJoke(request: Request<NewJoke>, response: ServerResponse): Promise<void> {
     if (request.body) {
-      await this.jokesService.addJoke(request.body);
-      response.end('Joke added');
+      const addedJoke = await this.jokesService.addJoke(request.body);
+      response.end(JSON.stringify(addedJoke ?? {}));
     }
   }
 
   public async removeJokes(request: Request<{ ids: number[] }>, response: ServerResponse): Promise<void> {
     if (request.body) {
       const ids = request.body.ids;
-      await this.jokesService.removeJokes(ids);
-      response.end('Jokes successfully removed');
+      const removedJokesIds = await this.jokesService.removeJokes(ids);
+      response.end(JSON.stringify({ids: removedJokesIds}));
     }
   }
 
   public async updateJoke(request: Request<UpdateJokeApi>, response: ServerResponse): Promise<void> {
     if (request.body) {
-      await this.jokesService.updateJoke(request.body);
-      response.end('Joke successfully updated');
+      const updatedJoke = await this.jokesService.updateJoke(request.body);
+      response.end(JSON.stringify(updatedJoke ?? {}));
     }
   }
 }

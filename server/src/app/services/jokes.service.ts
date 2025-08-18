@@ -22,16 +22,19 @@ export class JokesService {
     return await this.jokesModel.getJokes(filter);
   }
 
-  public async addJoke(joke: NewJoke): Promise<void> {
-    await this.jokesModel.addJoke(joke);
+  public async addJoke(joke: NewJoke): Promise<Joke | null> {
+    return await this.jokesModel.addJoke(joke);
   }
 
-  public async updateJoke(joke: UpdateJokeApi): Promise<void> {
-    await this.jokesModel.updateJoke(joke);
+  public async updateJoke(joke: UpdateJokeApi): Promise<Joke | null> {
+    return await this.jokesModel.updateJoke(joke);
   }
 
-  public async removeJokes(ids: number[]): Promise<void> {
-    await this.jokesModel.removeJokes(ids);
+  public async removeJokes(ids: number[]): Promise<number[]> {
+    const removedJokes = await this.jokesModel.removeJokes(ids);
+    const removedJokesIds = removedJokes.map(joke => joke.id);
+
+    return removedJokesIds;
   }
 
   public async sendRandomJoke(botToken: string, chatId: number): Promise<void> {

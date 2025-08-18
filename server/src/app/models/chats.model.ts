@@ -73,7 +73,7 @@ export class ChatsModel {
     return conditions;
   }
 
-  public async addChat(newChat: NewChatApi): Promise<void> {
+  public async addChat(newChat: NewChatApi): Promise<Chat | null> {
     const [dbChat] = await this.getChats({ names: [newChat.name] });
 
     if (dbChat) {
@@ -82,7 +82,9 @@ export class ChatsModel {
 
     try {
       const newDbChat = this.convertFromNewChat(newChat);
-      await this.postgres.insertInTable('chats', newDbChat);
+      const { rows } = await this.postgres.insertInTable<NewDbChat, DbChat>('chats', newDbChat);
+      const [ chat ] = this.convertFromDbChat(rows);
+      return chat ?? null;
     } catch(err) {
       this.logger.errorLog(`Error add chat: ${err}`);
       throw err;
@@ -94,14 +96,22 @@ export class ChatsModel {
     return this.convertFromDbChat(rows);
   }
 
-  public async updateChat(chat: UpdateChatApi): Promise<void> {
+  public async updateChat(chat: UpdateChatApi): Promise<Chat | null> {
     const [dbChat] = await this.postgres.selectFromTable<DbChat, DbChat>('chats', [], [{ columnName: 'id', value: chat.id, type: 'number', operation: '=' }]);
     if (!dbChat) {
       throw new NotFoundError(`Chat with id: ${chat.id} not found`);
     }
 
-    const updatedChat = this.convertFromUpdateChat(chat);
-    await this.postgres.updateTable('chats', chat.id, updatedChat);
+    try {
+      const updatedDbChat = this.convertFromUpdateChat(chat);
+      const { rows } = await this.postgres.updateTable<Partial<DbChat>, DbChat>('chats', chat.id, updatedDbChat);
+      const [ updatedChat ] = this.convertFromDbChat(rows);
+      return updatedChat ?? null;
+    } catch(err) {
+      this.logger.errorLog(`Error update chat: ${err}`);
+      throw err;
+    }
+    
   }
 
   private convertFromUpdateChat(chat: UpdateChatApi): Partial<DbChat> {

@@ -24,7 +24,7 @@ export class BotsService {
     });
   }
 
-  public async addBot(token: string): Promise<void> {
+  public async addBot(token: string): Promise<Bot | null> {
     const botInfo = await this.telegramService.getBotInfo(token);
     const addedBot = await this.botModel.addBot({
       token,
@@ -42,16 +42,21 @@ export class BotsService {
     if (addedBot) {
       this.eventBus.publish(EventName.bot_added, addedBot);
     }
+
+    return addedBot;
   }
 
   public async getBots(filter: FilterBotApi): Promise<Bot[]> {
     return await this.botModel.getBots(filter);
   }
 
-  public async removeBot(botIds: number[]): Promise<void> {
-    const oldBots = await this.getBots({ ids: botIds });
-    await this.botModel.removeBot(botIds);
-    this.publishDeletedRulesFromBots(oldBots);
+  public async removeBot(botIds: number[]): Promise<number[]> {
+    const removedBots = await this.botModel.removeBot(botIds);
+    const removedBotsIds = removedBots.map(bot => bot.id);
+
+    this.publishDeletedRulesFromBots(removedBots);
+
+    return removedBotsIds;
   }
 
   private publishDeletedRulesFromBots(bots: Bot[]): void {

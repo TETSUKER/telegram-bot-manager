@@ -9,6 +9,7 @@ import { ApiError } from 'app/errors/api.error';
 import { Logger } from './logger';
 import { ServerApiError } from 'app/errors/server.error';
 import { Dotenv } from './dotenv';
+import { NotFoundError } from 'app/errors/not-found.error';
 
 export class Http {
   private httpServer: Server;
@@ -41,14 +42,14 @@ export class Http {
     const routePath = this.routes[parsedUrl.pathname];
 
     if (routePath === undefined) {
-      res.statusCode = 404;
-      res.end(`Path: ${parsedUrl.pathname} doesn't exist.`);
+      const error = new NotFoundError(`Path: ${parsedUrl.pathname} doesn't exist.`);
+      this.handleError(error, res);
       return;
     }
 
     if (routePath[req.method as RequestMethod] === undefined) {
-      res.statusCode = 404;
-      res.end(`${req.method} with path: ${parsedUrl.pathname} doesn't exist.`);
+      const error = new NotFoundError(`${req.method} with path: ${parsedUrl.pathname} doesn't exist.`);
+      this.handleError(error, res);
       return;
     }
 
@@ -62,7 +63,8 @@ export class Http {
         this.handleError(err as ApiError, res);
       }
     } else {
-      throw new Error(`Handler for ${req.method} with path: ${parsedUrl.pathname} doesn't exist.`);
+      const error = new NotFoundError(`Handler for ${req.method} with path: ${parsedUrl.pathname} doesn't exist.`);
+      this.handleError(error, res);
     }
   }
 

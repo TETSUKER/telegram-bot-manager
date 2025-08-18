@@ -113,8 +113,8 @@ export class RulesModel {
     const dbRule = this.convertToDbRule(newRule);
     try {
       const { rows } = await this.postgres.insertInTable<NewDbRule, DbRule>('rules', dbRule);
-      const [ convertedRule ] = this.convertFromDbRules(rows);
-      return convertedRule ?? null;
+      const [ addedRule ] = this.convertFromDbRules(rows);
+      return addedRule ?? null;
     } catch {
       throw new ServerApiError('Error add rule');
     }

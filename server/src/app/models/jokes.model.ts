@@ -93,8 +93,8 @@ export class JokesModel {
     };
     try {
       const { rows } = await this.postgres.insertInTable<NewDbJoke, DbJoke>(this.JokesTableName, joke);
-      const [ convertedJoke ] = this.convertFromDbJoke(rows);
-      return convertedJoke ?? null;
+      const [ addedJoke ] = this.convertFromDbJoke(rows);
+      return addedJoke ?? null;
     } catch(err) {
       this.logger.errorLog(`Error add joke: ${err}`);
       throw err;

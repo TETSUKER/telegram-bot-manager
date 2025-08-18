@@ -9,15 +9,15 @@ export class BotsController {
 
   public async addBot(request: Request<{ token: string }>, response: ServerResponse): Promise<void> {
     if (request.body) {
-      await this.botsService.addBot(request.body.token);
-      response.end('Bot added');
+      const addedBot = await this.botsService.addBot(request.body.token);
+      response.end(JSON.stringify(addedBot ?? {}));
     }
   }
 
   public async removeBots(request: Request<{ ids: number[] }>, response: ServerResponse): Promise<void> {
     if (request.body) {
-      await this.botsService.removeBot(request.body.ids);
-      response.end('Bot successfully removed');
+      const removedBotsIds = await this.botsService.removeBot(request.body.ids);
+      response.end(JSON.stringify({ids: removedBotsIds}));
     }
   }
 
@@ -28,8 +28,8 @@ export class BotsController {
 
   public async updateBot(request: Request<UpdateBotApi>, response: ServerResponse): Promise<void> {
     if (request.body) {
-      await this.botsService.updateBot(request.body);
-      response.end('Bot succesfully updated');
+      const updatedBot = await this.botsService.updateBot(request.body);
+      response.end(JSON.stringify(updatedBot ?? {}));
     }
   }
 }

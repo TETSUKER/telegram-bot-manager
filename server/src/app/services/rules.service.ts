@@ -30,17 +30,19 @@ export class RulesService {
     });
   }
 
-  public async addRule(newMessageRule: NewRule): Promise<void> {
-    await this.rulesModel.addRule(newMessageRule);
+  public async addRule(newMessageRule: NewRule): Promise<Rule | null> {
+    return await this.rulesModel.addRule(newMessageRule);
   }
 
-  public async removeRules(ids: number[]): Promise<void> {
+  public async removeRules(ids: number[]): Promise<number[]> {
     const removedRules = await this.rulesModel.removeRules(ids);
     const removedRuleIds = removedRules.map(rule => rule.id);
     const bots = await this.botsService.getBots({ ruleIds: removedRuleIds });
 
     this.publishDeletedRules(removedRuleIds);
     this.publishDeletedRulesFromBots(bots, removedRuleIds);
+
+    return removedRuleIds;
   }
 
   private publishDeletedRules(removedRuleIds: number[]): void {
@@ -56,13 +58,15 @@ export class RulesService {
     }
   }
 
-  public async updateRule(updateRule: UpdateRuleApi): Promise<void> {
+  public async updateRule(updateRule: UpdateRuleApi): Promise<Rule | null> {
     const updatedRule = await this.rulesModel.updateRule(updateRule);
 
     if (updatedRule) {
       const bots = await this.botsService.getBots({ ruleIds: [updateRule.id] });
       this.publishUpdatedRuleInBots(bots, updatedRule);
     }
+
+    return updatedRule;
   }
 
   private publishUpdatedRuleInBots(bots: Bot[], rule: Rule): void {
