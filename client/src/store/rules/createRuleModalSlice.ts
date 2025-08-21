@@ -107,7 +107,10 @@ function getServerRuleFromState(state: CreateRuleModalSliceState): NewRule {
       return {
         type: RuleResponseType.message,
         text: state.text.value,
-        reply: state.reply.value,
+        reply:
+          state.conditionType.value === RuleConditionType.schedule
+            ? false
+            : state.reply.value,
       };
     }
 
@@ -115,7 +118,10 @@ function getServerRuleFromState(state: CreateRuleModalSliceState): NewRule {
       return {
         type: RuleResponseType.sticker,
         stickerId: state.stickerId.value,
-        reply: state.reply.value,
+        reply:
+          state.conditionType.value === RuleConditionType.schedule
+            ? false
+            : state.reply.value,
       };
     }
 
@@ -440,21 +446,18 @@ function updateVisibleState(state: CreateRuleModalSliceState): void {
   if (state.responseType.value === RuleResponseType.message) {
     state.text.visible = true;
     state.stickerId.visible = false;
-    state.reply.visible = true;
     state.emoji.visible = false;
   }
 
   if (state.responseType.value === RuleResponseType.sticker) {
     state.text.visible = false;
     state.stickerId.visible = true;
-    state.reply.visible = true;
     state.emoji.visible = false;
   }
 
   if (state.responseType.value === RuleResponseType.emoji) {
     state.text.visible = false;
     state.stickerId.visible = false;
-    state.reply.visible = false;
     state.emoji.visible = true;
   }
 
@@ -465,8 +468,18 @@ function updateVisibleState(state: CreateRuleModalSliceState): void {
   ) {
     state.text.visible = false;
     state.stickerId.visible = false;
-    state.reply.visible = false;
     state.emoji.visible = false;
+  }
+
+  if (state.conditionType.value === RuleConditionType.schedule ||
+    state.responseType.value === RuleResponseType.random_joke ||
+    state.responseType.value === RuleResponseType.find_joke ||
+    state.responseType.value === RuleResponseType.joke_rating ||
+    state.responseType.value === RuleResponseType.emoji
+  ) {
+    state.reply.visible = false;
+  } else {
+    state.reply.visible = true;
   }
 }
 

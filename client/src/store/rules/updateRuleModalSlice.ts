@@ -23,7 +23,7 @@ import {
   ServerRule,
 } from "api/rules";
 import { getChats, ServerChat } from "api/chat";
-import { isServerError } from 'api/serverError';
+import { isServerError } from "api/serverError";
 
 interface UpdateRuleModalSliceState {
   isOpened: boolean;
@@ -108,7 +108,10 @@ function getServerRuleFromState(state: UpdateRuleModalSliceState): ServerRule {
       return {
         type: RuleResponseType.message,
         text: state.text.value,
-        reply: state.reply.value,
+        reply:
+          state.conditionType.value === RuleConditionType.schedule
+            ? false
+            : state.reply.value,
       };
     }
 
@@ -116,7 +119,10 @@ function getServerRuleFromState(state: UpdateRuleModalSliceState): ServerRule {
       return {
         type: RuleResponseType.sticker,
         stickerId: state.stickerId.value,
-        reply: state.reply.value,
+        reply:
+          state.conditionType.value === RuleConditionType.schedule
+            ? false
+            : state.reply.value,
       };
     }
 
@@ -450,21 +456,18 @@ function updateVisibleState(state: UpdateRuleModalSliceState): void {
   if (state.responseType.value === RuleResponseType.message) {
     state.text.visible = true;
     state.stickerId.visible = false;
-    state.reply.visible = true;
     state.emoji.visible = false;
   }
 
   if (state.responseType.value === RuleResponseType.sticker) {
     state.text.visible = false;
     state.stickerId.visible = true;
-    state.reply.visible = true;
     state.emoji.visible = false;
   }
 
   if (state.responseType.value === RuleResponseType.emoji) {
     state.text.visible = false;
     state.stickerId.visible = false;
-    state.reply.visible = false;
     state.emoji.visible = true;
   }
 
@@ -475,8 +478,18 @@ function updateVisibleState(state: UpdateRuleModalSliceState): void {
   ) {
     state.text.visible = false;
     state.stickerId.visible = false;
-    state.reply.visible = false;
     state.emoji.visible = false;
+  }
+
+  if (state.conditionType.value === RuleConditionType.schedule ||
+    state.responseType.value === RuleResponseType.random_joke ||
+    state.responseType.value === RuleResponseType.find_joke ||
+    state.responseType.value === RuleResponseType.joke_rating ||
+    state.responseType.value === RuleResponseType.emoji
+  ) {
+    state.reply.visible = false;
+  } else {
+    state.reply.visible = true;
   }
 }
 
@@ -563,7 +576,7 @@ export const updateRuleModalSlice = createSlice({
       return {
         ...initialState,
         isOpened: false,
-      }
+      };
     },
     setRuleName(state, action: PayloadAction<string>): void {
       state.name.value = action.payload;
@@ -644,10 +657,12 @@ export const updateRuleModalSlice = createSlice({
       state.isLoading = false;
       if (action.payload) {
         state.id = action.payload.serverRule.id;
-        state.scheduleChats.options = action.payload.serverChats.map((chat) => ({
-          text: chat.name,
-          value: chat.id,
-        }));
+        state.scheduleChats.options = action.payload.serverChats.map(
+          (chat) => ({
+            text: chat.name,
+            value: chat.id,
+          })
+        );
         setServerRuleToState(action.payload.serverRule, state);
       }
       updateVisibleState(state);
