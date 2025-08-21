@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOM from "react-dom";
 
 interface ChipSelectorInputProps<T = string> {
   options: { value: T; text: string }[];
@@ -21,6 +22,15 @@ export function ChipSelector<T = string>({
   const [options, setOptions] = React.useState(propsOptions);
   const selected = value ? value : [];
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
+  const [dropdownPos, setDropdownPos] = React.useState<{
+    top: number;
+    left: number;
+    width: number;
+  }>({
+    top: 0,
+    left: 0,
+    width: 0,
+  });
 
   React.useEffect(() => {
     setOptions(propsOptions);
@@ -28,12 +38,31 @@ export function ChipSelector<T = string>({
 
   React.useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (!containerRef.current?.contains(e.target as Node))
+      if (!containerRef.current?.contains(e.target as Node)) {
         setDropdownOpen(false);
+      }
     };
     if (dropdownOpen) document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [dropdownOpen]);
+
+  const updateDropdownPosition = () => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (rect) {
+      setDropdownPos({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    }
+  };
+
+  const toggleDropdown = () => {
+    if (!disabled) {
+      updateDropdownPosition();
+      setDropdownOpen((v) => !v);
+    }
+  };
 
   const removeChip = (value: T) => {
     onChange(selected.filter((v) => v !== value));
@@ -59,13 +88,14 @@ export function ChipSelector<T = string>({
           "relative flex flex-wrap items-center gap-1 bg-transparent border border-slate-300 text-slate-300 p-[4px] rounded-[5px]",
           disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
         ].join(" ")}
-        onClick={() => !disabled && setDropdownOpen((v) => !v)}
+        onClick={toggleDropdown}
         onKeyDown={(e) => {
           if (
             (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") &&
             !dropdownOpen
           ) {
             e.preventDefault();
+            updateDropdownPosition();
             setDropdownOpen(true);
           }
         }}
@@ -98,7 +128,7 @@ export function ChipSelector<T = string>({
             </span>
           );
         })}
-        {/* Стрелочка */}
+
         <span className="ml-auto pl-2 flex items-center absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
           <svg
             width={20}
@@ -117,9 +147,19 @@ export function ChipSelector<T = string>({
             />
           </svg>
         </span>
-        {/* Dropdown */}
-        {dropdownOpen && (
-          <div className="absolute left-0 top-full mt-1 w-full bg-slate-900 border border-slate-300 rounded-[5px] shadow-lg max-h-52 overflow-auto z-50">
+      </div>
+
+      {dropdownOpen &&
+        ReactDOM.createPortal(
+          <div
+            className="absolute bg-slate-900 border border-slate-300 rounded-[5px] shadow-lg max-h-52 overflow-auto z-[9999]"
+            style={{
+              top: dropdownPos.top,
+              left: dropdownPos.left,
+              width: dropdownPos.width,
+              position: "absolute",
+            }}
+          >
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
                 <div
@@ -135,9 +175,9 @@ export function ChipSelector<T = string>({
                 No available options
               </div>
             )}
-          </div>
+          </div>,
+          document.body
         )}
-      </div>
     </div>
   );
 }
