@@ -23,6 +23,7 @@ import {
   ServerRule,
 } from "api/rules";
 import { getChats, ServerChat } from "api/chat";
+import { isServerError } from 'api/serverError';
 
 interface UpdateRuleModalSliceState {
   isOpened: boolean;
@@ -164,8 +165,12 @@ export const updateRuleRequest = createAsyncThunk<
     dispatch(closeUpdateRuleModal());
     dispatch(updateRules());
   } catch (err) {
-    const errMessage = (err as Error).message ?? "Unknown error";
-    alert(errMessage);
+    if (isServerError(err)) {
+      const errMessage = err.error.message;
+      alert(errMessage);
+    } else {
+      alert("Unknown error while update rule :(");
+    }
   }
 });
 

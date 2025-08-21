@@ -121,14 +121,13 @@ export async function updateRule(rule: ServerRule): Promise<any> {
       method: "POST",
       body: JSON.stringify({ ...rule }),
     });
-
+    // await new Promise(resolve => setTimeout(resolve, 1000));
     if (!response.ok) {
-      const result = await response.json();
-      throw result.error;
+      throw await parseResponse(response);
     } else {
-      return response;
+      return await parseResponse(response);
     }
-  } catch (err) {
+  } catch(err) {
     throw err;
   }
 }
@@ -144,7 +143,7 @@ export async function createRule(rule: NewRule): Promise<any> {
     if (!response.ok) {
       throw await parseResponse(response);
     } else {
-      return parseResponse(response);
+      return await parseResponse(response);
     }
   } catch (err) {
     throw err;
@@ -153,10 +152,18 @@ export async function createRule(rule: NewRule): Promise<any> {
 
 export async function deleteRules(ids: number[]): Promise<Response> {
   const path = baseUrl + "/removeRules";
-  const response = await fetch(path, {
-    method: "POST",
-    body: JSON.stringify({ ids }),
-  });
-  // await new Promise(resolve => setTimeout(resolve, 1000));
-  return response;
+  try {
+    const response = await fetch(path, {
+      method: "POST",
+      body: JSON.stringify({ ids }),
+    });
+    // await new Promise(resolve => setTimeout(resolve, 1000));
+    if (!response.ok) {
+      throw await parseResponse(response);
+    } else {
+      return await parseResponse(response);
+    }
+  } catch(err) {
+    throw err;
+  }
 }

@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { addChat } from "api/chat";
 import { updateChats } from "./chatsTableSlice";
 import { ButtonState, TextInputState, ThunkApiConfig } from "store/interfaces";
+import { isServerError } from 'api/serverError';
 
 interface AddChatModalSliceState {
   isOpened: boolean;
@@ -44,12 +45,22 @@ export const addChatRequest = createAsyncThunk<
   void,
   ThunkApiConfig
 >("addChatModel/update", async (_, { dispatch, getState }) => {
-  const state = getState();
-  await addChat({
-    name: state.chat.addChatModal.name.value,
-    chatId: state.chat.addChatModal.chatId.value,
-  });
-  dispatch(updateChats());
+  try {
+    const state = getState();
+    await addChat({
+      name: state.chat.addChatModal.name.value,
+      chatId: state.chat.addChatModal.chatId.value,
+    });
+    dispatch(closeAddChatModal());
+    dispatch(updateChats());
+  } catch(err) {
+    if (isServerError(err)) {
+      const errMessage = err.error.message;
+      alert(errMessage);
+    } else {
+      alert('Unknown error while update chat :(');
+    }
+  }
 });
 
 export const addChatModalSlice = createSlice({
@@ -76,7 +87,6 @@ export const addChatModalSlice = createSlice({
       state.apply.loading = true;
     });
     builder.addCase(addChatRequest.fulfilled, (state) => {
-      state.isOpened = false;
       state.name.disabled = false;
       state.chatId.disabled = false;
       state.apply.loading = false;

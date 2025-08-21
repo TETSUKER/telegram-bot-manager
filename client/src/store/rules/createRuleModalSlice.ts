@@ -23,6 +23,7 @@ import {
   ScheduleType,
 } from "api/rules";
 import { getChats, ServerChat } from "api/chat";
+import { isServerError } from 'api/serverError';
 
 interface CreateRuleModalSliceState {
   isOpened: boolean;
@@ -162,12 +163,11 @@ export const createRuleRequest = createAsyncThunk<
     dispatch(closeCreateRuleModal());
     dispatch(updateRules());
   } catch (err) {
-    if ((err as any).error) {
-      const error = (err as any).error;
-      const errMessage = (error as Error).message;
+    if (isServerError(err)) {
+      const errMessage = err.error.message;
       alert(errMessage);
     } else {
-      alert(err);
+      alert("Unknown error while create rule :(");
     }
   }
 });

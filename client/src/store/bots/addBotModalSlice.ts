@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { addBot } from "api/bots";
 import { ButtonState, TextInputState, ThunkApiConfig } from "store/interfaces";
 import { updateBotsTable } from "./botsTableSlice";
+import { isServerError } from "api/serverError";
 
 interface CreateBotModalSliceState {
   isOpened: boolean;
@@ -45,12 +46,11 @@ export const addBotRequest = createAsyncThunk<
     dispatch(closeAddBotModal());
     dispatch(updateBotsTable());
   } catch (err) {
-    if ((err as any).error) {
-      const error = (err as any).error;
-      const errMessage = (error as Error).message;
+    if (isServerError(err)) {
+      const errMessage = err.error.message;
       alert(errMessage);
     } else {
-      alert(err);
+      alert('Unknown error while add bot :(');
     }
   }
 });

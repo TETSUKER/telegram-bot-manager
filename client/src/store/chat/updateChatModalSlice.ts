@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { UpdateChat, updateChat } from "api/chat";
 import { updateChats } from "./chatsTableSlice";
 import { ButtonState, TextInputState, ThunkApiConfig } from "store/interfaces";
+import { isServerError } from "api/serverError";
 
 interface UpdateChatModalSliceState {
   isOpened: boolean;
@@ -46,13 +47,23 @@ export const updateChatRequest = createAsyncThunk<
   void,
   ThunkApiConfig
 >("updateChatModel/update", async (_, { dispatch, getState }) => {
-  const state = getState();
-  await updateChat({
-    id: state.chat.updateChatModal.id,
-    name: state.chat.updateChatModal.name.value,
-    chatId: state.chat.updateChatModal.chatId.value,
-  });
-  dispatch(updateChats());
+  try {
+    const state = getState();
+    await updateChat({
+      id: state.chat.updateChatModal.id,
+      name: state.chat.updateChatModal.name.value,
+      chatId: state.chat.updateChatModal.chatId.value,
+    });
+    dispatch(closeUpdateChatModal());
+    dispatch(updateChats());
+  } catch (err) {
+    if (isServerError(err)) {
+      const errMessage = err.error.message;
+      alert(errMessage);
+    } else {
+      alert("Unknown error while update chat :(");
+    }
+  }
 });
 
 export const updateChatModalSlice = createSlice({
@@ -82,7 +93,6 @@ export const updateChatModalSlice = createSlice({
       state.apply.loading = true;
     });
     builder.addCase(updateChatRequest.fulfilled, (state) => {
-      state.isOpened = false;
       state.name.disabled = false;
       state.chatId.disabled = false;
       state.apply.loading = false;
@@ -95,7 +105,11 @@ export const updateChatModalSlice = createSlice({
   },
 });
 
-export const { openUpdateChatModal, closeUpdateChatModal, setChatName, setChatId } =
-  updateChatModalSlice.actions;
+export const {
+  openUpdateChatModal,
+  closeUpdateChatModal,
+  setChatName,
+  setChatId,
+} = updateChatModalSlice.actions;
 
 export default updateChatModalSlice.reducer;

@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { deleteJokes } from "api/jokes";
 import { ButtonState, ThunkApiConfig } from "store/interfaces";
 import { clearSelection, updateJokes } from "./jokesTableSlice";
+import { isServerError } from "api/serverError";
 
 interface DeleteJokesModalSliceState {
   isOpened: boolean;
@@ -30,10 +31,20 @@ export const deleteJokesRequest = createAsyncThunk<
   void,
   ThunkApiConfig
 >("deleteJokesModal/delete", async (_, { dispatch, getState }) => {
-  const ids = getState().joke.deleteJokesModal.jokesIds;
-  await deleteJokes(ids);
-  dispatch(clearSelection());
-  dispatch(updateJokes());
+  try {
+    const ids = getState().joke.deleteJokesModal.jokesIds;
+    await deleteJokes(ids);
+    dispatch(closeDeleteJokesModal());
+    dispatch(clearSelection());
+    dispatch(updateJokes());
+  } catch (err) {
+    if (isServerError(err)) {
+      const errMessage = err.error.message;
+      alert(errMessage);
+    } else {
+      alert("Unknown error while delete jokes :(");
+    }
+  }
 });
 
 export const deleteJokesModalSlice = createSlice({
@@ -54,7 +65,6 @@ export const deleteJokesModalSlice = createSlice({
     });
     builder.addCase(deleteJokesRequest.fulfilled, (state) => {
       state.delete.loading = false;
-      state.isOpened = false;
     });
     builder.addCase(deleteJokesRequest.rejected, (state) => {
       state.delete.loading = false;

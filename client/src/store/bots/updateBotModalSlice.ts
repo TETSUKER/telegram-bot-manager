@@ -7,6 +7,7 @@ import {
 } from "store/interfaces";
 import { updateBotsTable } from "./botsTableSlice";
 import { getRules, ServerRule } from "api/rules";
+import { isServerError } from 'api/serverError';
 
 interface UpdateBotModalSliceState {
   isOpened: boolean;
@@ -80,12 +81,11 @@ export const openUpdateBotModal = createAsyncThunk<
       serverRules: rules,
     };
   } catch (err) {
-    if ((err as any).error) {
-      const error = (err as any).error;
-      const errMessage = (error as Error).message;
+    if (isServerError(err)) {
+      const errMessage = err.error.message;
       alert(errMessage);
     } else {
-      alert(err);
+      alert('Unknown error while update bot :(');
     }
   }
 });

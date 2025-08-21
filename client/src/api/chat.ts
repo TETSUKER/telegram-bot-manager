@@ -1,4 +1,5 @@
 import { baseUrl } from './baseUrl';
+import { parseResponse } from './parseResponse';
 
 export interface ServerChat {
   id: number;
@@ -20,40 +21,76 @@ export interface UpdateChat {
 
 export async function getChats(): Promise<ServerChat[]> {
   const path = baseUrl + '/getChats';
-  const response = await fetch(path, {
-    method: "POST",
-    body: JSON.stringify({}),
-  });
-  // await new Promise(resolve => setTimeout(resolve, 1000));
-  return response.json();
+
+  try {
+    const response = await fetch(path, {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+    // await new Promise(resolve => setTimeout(resolve, 1000));
+    if (!response.ok) {
+      throw await parseResponse(response);
+    } else {
+      return await parseResponse(response);
+    }
+  } catch(err) {
+    throw err;
+  }
 }
 
 export async function addChat(body: NewChat): Promise<Response> {
   const path = baseUrl + '/addChat';
-  const response = await fetch(path, {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
-  // await new Promise(resolve => setTimeout(resolve, 1000));
-  return response;
+
+  try {
+    const response = await fetch(path, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+    // await new Promise(resolve => setTimeout(resolve, 1000));
+    if (!response.ok) {
+      throw await parseResponse(response);
+    } else {
+      return await parseResponse(response);
+    }
+  } catch(err) {
+    throw err;
+  }
 }
 
 export async function deleteChats(ids: number[]): Promise<Response> {
   const path = baseUrl + '/removeChat';
-  const response = await fetch(path, {
-    method: "POST",
-    body: JSON.stringify({ids}),
-  });
-  // await new Promise(resolve => setTimeout(resolve, 1000));
-  return response;
+
+  try {
+    const response = await fetch(path, {
+      method: "POST",
+      body: JSON.stringify({ids}),
+    });
+    // await new Promise(resolve => setTimeout(resolve, 1000));
+    if (!response.ok) {
+      throw await parseResponse(response);
+    } else {
+      return await parseResponse(response);
+    }
+  } catch(err) {
+    throw err;
+  }
 }
 
 export async function updateChat(chat: UpdateChat): Promise<Response> {
   const path = baseUrl + '/updateChat';
-  const response = await fetch(path, {
-    method: "POST",
-    body: JSON.stringify({...chat}),
-  });
-  // await new Promise(resolve => setTimeout(resolve, 1000));
-  return response;
+
+  try {
+    const response = await fetch(path, {
+      method: "POST",
+      body: JSON.stringify({...chat}),
+    });
+    // await new Promise(resolve => setTimeout(resolve, 1000));
+    if (!response.ok) {
+      throw await parseResponse(response);
+    } else {
+      return await parseResponse(response);
+    }
+  } catch(err) {
+    throw err;
+  }
 }

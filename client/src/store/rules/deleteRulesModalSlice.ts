@@ -1,7 +1,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ButtonState, ThunkApiConfig } from "store/interfaces";
-import { deleteRules } from 'api/rules';
-import { clearSelection, updateRules } from './rulesTableSlice';
+import { deleteRules } from "api/rules";
+import { clearSelection, updateRules } from "./rulesTableSlice";
+import { isServerError } from "api/serverError";
 
 interface DeleteRulesModalSliceState {
   isOpened: boolean;
@@ -30,10 +31,20 @@ export const deleteRulesRequest = createAsyncThunk<
   void,
   ThunkApiConfig
 >("deleteRulesModal/delete", async (_, { dispatch, getState }) => {
-  const ids = getState().rule.deleteRulesModal.rulesIds;
-  await deleteRules(ids);
-  dispatch(clearSelection());
-  dispatch(updateRules());
+  try {
+    const ids = getState().rule.deleteRulesModal.rulesIds;
+    await deleteRules(ids);
+    dispatch(closeDeleteRulesModal());
+    dispatch(clearSelection());
+    dispatch(updateRules());
+  } catch (err) {
+    if (isServerError(err)) {
+      const errMessage = err.error.message;
+      alert(errMessage);
+    } else {
+      alert("Unknown error while delete rules :(");
+    }
+  }
 });
 
 export const deleteRulesModalSlice = createSlice({
@@ -54,7 +65,6 @@ export const deleteRulesModalSlice = createSlice({
     });
     builder.addCase(deleteRulesRequest.fulfilled, (state) => {
       state.delete.loading = false;
-      state.isOpened = false;
     });
     builder.addCase(deleteRulesRequest.rejected, (state) => {
       state.delete.loading = false;

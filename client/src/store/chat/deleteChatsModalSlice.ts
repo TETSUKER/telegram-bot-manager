@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { deleteChats } from "api/chat";
 import { updateChats, clearSelection } from "./chatsTableSlice";
 import { ButtonState, ThunkApiConfig } from "store/interfaces";
+import { isServerError } from "api/serverError";
 
 interface DeleteChatsModalSliceState {
   isOpened: boolean;
@@ -30,10 +31,20 @@ export const deleteChatsRequest = createAsyncThunk<
   void,
   ThunkApiConfig
 >("deleteChatsModal/delete", async (_, { dispatch, getState }) => {
-  const ids = getState().chat.deleteChatsModal.chatIds;
-  await deleteChats(ids);
-  dispatch(clearSelection());
-  dispatch(updateChats());
+  try {
+    const ids = getState().chat.deleteChatsModal.chatIds;
+    await deleteChats(ids);
+    dispatch(closeDeleteChatsModal());
+    dispatch(clearSelection());
+    dispatch(updateChats());
+  } catch (err) {
+    if (isServerError(err)) {
+      const errMessage = err.error.message;
+      alert(errMessage);
+    } else {
+      alert("Unknown error while delete chats :(");
+    }
+  }
 });
 
 export const deleteChatsModalSlice = createSlice({
@@ -54,7 +65,6 @@ export const deleteChatsModalSlice = createSlice({
     });
     builder.addCase(deleteChatsRequest.fulfilled, (state) => {
       state.delete.loading = false;
-      state.isOpened = false;
     });
     builder.addCase(deleteChatsRequest.rejected, (state) => {
       state.delete.loading = false;

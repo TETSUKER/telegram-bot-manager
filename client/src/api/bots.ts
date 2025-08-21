@@ -34,7 +34,7 @@ export async function getBots(): Promise<ServerBot[]> {
     if (!response.ok) {
       throw await parseResponse(response);
     } else {
-      return parseResponse(response);
+      return await parseResponse(response);
     }
   } catch(err) {
     throw err;
@@ -52,7 +52,7 @@ export async function addBot(token: string): Promise<Response> {
     if (!response.ok) {
       throw await parseResponse(response);
     } else {
-      return parseResponse(response);
+      return await parseResponse(response);
     }
   } catch(err) {
     throw err;
@@ -71,7 +71,7 @@ export async function deleteBots(ids: number[]): Promise<Response> {
     if (!response.ok) {
       throw await parseResponse(response);
     } else {
-      return parseResponse(response);
+      return await parseResponse(response);
     }
   } catch(err) {
     throw err;
@@ -89,7 +89,7 @@ export async function updateBot(bot: UpdateBot): Promise<Response> {
     if (!response.ok) {
       throw await parseResponse(response);
     } else {
-      return parseResponse(response);
+      return await parseResponse(response);
     }
   } catch(err) {
     throw err;

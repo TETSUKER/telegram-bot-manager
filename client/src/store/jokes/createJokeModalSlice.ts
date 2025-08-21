@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ButtonState, TextInputState, ThunkApiConfig } from "store/interfaces";
 import { createJoke } from "api/jokes";
 import { updateJokes } from "./jokesTableSlice";
+import { isServerError } from "api/serverError";
 
 interface CreateJokeModalSliceState {
   isOpened: boolean;
@@ -36,11 +37,21 @@ export const createJokeRequest = createAsyncThunk<
   void,
   ThunkApiConfig
 >("createJokeModel/create", async (_, { dispatch, getState }) => {
-  const state = getState();
-  await createJoke({
-    text: state.joke.createJokeModal.text.value,
-  });
-  dispatch(updateJokes());
+  try {
+    const state = getState();
+    await createJoke({
+      text: state.joke.createJokeModal.text.value,
+    });
+    dispatch(closeCreateJokeModal());
+    dispatch(updateJokes());
+  } catch (err) {
+    if (isServerError(err)) {
+      const errMessage = err.error.message;
+      alert(errMessage);
+    } else {
+      alert("Unknown error while create joke :(");
+    }
+  }
 });
 
 export const createJokeModalSlice = createSlice({
@@ -63,7 +74,6 @@ export const createJokeModalSlice = createSlice({
       state.apply.loading = true;
     });
     builder.addCase(createJokeRequest.fulfilled, (state) => {
-      state.isOpened = false;
       state.text.disabled = false;
       state.apply.loading = false;
     });
