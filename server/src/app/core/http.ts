@@ -70,6 +70,7 @@ export class Http {
 
   private handleError(err: ApiError, res: ServerResponse): void {
     res.statusCode = err.statusCode;
+    res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({
       error: {
         message: err.message,
