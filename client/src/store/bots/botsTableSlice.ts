@@ -19,17 +19,7 @@ const initialState: BotsTableSliceState = {
 };
 
 export const updateBotsTable = createAsyncThunk("bots/update", async () => {
-  try {
-    return await getBots();
-  } catch (err) {
-    if ((err as any).error) {
-      const error = (err as any).error;
-      const errMessage = (error as Error).message;
-      alert(errMessage);
-    } else {
-      alert(err);
-    }
-  }
+  return await getBots();
 });
 
 const getIsAllSelected = (bots: ServerBot[], selectedIds: number[]) =>
