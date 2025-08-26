@@ -1,15 +1,22 @@
-import { diContainer } from 'app/core/di-container';
-import { TelegramService } from './telegram.service';
-import { Rule, RuleCondition, RuleResponse } from 'app/interfaces/rule.interfaces';
-import { TelegramMessage, TelegramUpdate } from 'app/interfaces/telegram-api.interfaces';
-import { Bot } from 'app/interfaces/bot.interfaces';
-import { Logger } from 'app/core/logger';
-import { EventBus } from 'app/core/event-bus';
-import { EventName } from 'app/interfaces/event-bus.interfaces';
-import { RulesService } from './rules.service';
-import { BotsService } from './bots.service';
-import { JokesService } from './jokes.service';
-import { MessageResponseService } from './message-response.service';
+import { diContainer } from "app/core/di-container";
+import { TelegramService } from "./telegram.service";
+import {
+  Rule,
+  RuleCondition,
+  RuleResponse,
+} from "app/interfaces/rule.interfaces";
+import {
+  TelegramMessage,
+  TelegramUpdate,
+} from "app/interfaces/telegram-api.interfaces";
+import { Bot } from "app/interfaces/bot.interfaces";
+import { Logger } from "app/core/logger";
+import { EventBus } from "app/core/event-bus";
+import { EventName } from "app/interfaces/event-bus.interfaces";
+import { RulesService } from "./rules.service";
+import { BotsService } from "./bots.service";
+import { JokesService } from "./jokes.service";
+import { MessageResponseService } from "./message-response.service";
 
 export class UpdatesService {
   private bots = new Map<number, Bot>();
@@ -22,15 +29,28 @@ export class UpdatesService {
     private rulesService: RulesService,
     private botsService: BotsService,
     private jokesService: JokesService,
-    private messageResponseService: MessageResponseService,
+    private messageResponseService: MessageResponseService
   ) {
     this.cacheBots();
     this.cacheRules();
-    this.eventBus.subscribe(EventName.bot_added, bot => {
+    this.eventBus.subscribe(EventName.bot_added, (bot) => {
       this.bots.set(bot.id, bot);
     });
-    this.eventBus.subscribe(EventName.bot_removed, id => {
+    this.eventBus.subscribe(EventName.bot_updated, (bot) => {
+      this.bots.set(bot.id, bot);
+    });
+    this.eventBus.subscribe(EventName.bot_removed, (id) => {
       this.bots.delete(id);
+    });
+    this.eventBus.subscribe(EventName.rule_added, (rule) => {
+      this.rules.push(rule);
+    });
+    this.eventBus.subscribe(EventName.rule_updated, (updatedRule) => {
+      this.rules = this.rules.filter((rule) => updatedRule.id !== rule.id);
+      this.rules.push(updatedRule);
+    });
+    this.eventBus.subscribe(EventName.rules_removed, (ids) => {
+      this.rules = this.rules.filter((rule) => !ids.includes(rule.id));
     });
   }
 
@@ -43,22 +63,29 @@ export class UpdatesService {
   }
 
   private async cacheRules(): Promise<void> {
-    const rules = await this.rulesService.getRules({});
-    this.rules = rules;
+    this.rules = await this.rulesService.getRules({});
   }
 
   private async pollBotUpdates(botId: number): Promise<void> {
     let bot = this.bots.get(botId);
 
-    while(bot) {
+    while (bot) {
       try {
-        const updates = await this.telegramService.getUpdates(bot.token, bot.lastUpdateId + 1);
+        const updates = await this.telegramService.getUpdates(
+          bot.token,
+          bot.lastUpdateId + 1
+        );
 
         if (Array.isArray(updates) && updates.length > 0) {
           for (const update of updates) {
-            this.logger.infoLog(`Bot: ${bot.username} recieve update: ${JSON.stringify(update)}`);
+            this.logger.infoLog(
+              `Bot: ${bot.username} recieve update: ${JSON.stringify(update)}`
+            );
             try {
-              if (update.callback_query && update.callback_query.from.is_bot === false) {
+              if (
+                update.callback_query &&
+                update.callback_query.from.is_bot === false
+              ) {
                 await this.handleCallback(update, bot);
               } else {
                 await this.handleUpdate(update, bot);
@@ -69,32 +96,44 @@ export class UpdatesService {
           }
         }
         bot = this.bots.get(botId);
-      } catch(err) {
-        if (bot) {
-          await this.updateBotLastUpdateId(bot.id, bot.lastUpdateId + 1);
-        }
-        this.logger.errorLog(`${this.pollBotUpdates.name} error: ${JSON.stringify(err)}`);
+      } catch (err) {
+        this.logger.errorLog(
+          `${this.pollBotUpdates.name} error: ${JSON.stringify(err)}`
+        );
         await this.delay(5000);
       }
     }
   }
 
-  private async updateBotLastUpdateId(botId: number, lastUpdateId: number): Promise<void> {
+  private async updateBotLastUpdateId(
+    botId: number,
+    lastUpdateId: number
+  ): Promise<void> {
     try {
-      const updatedBot = await this.botsService.updateBot({ id: botId, lastUpdateId: lastUpdateId });
+      const updatedBot = await this.botsService.updateBot({
+        id: botId,
+        lastUpdateId: lastUpdateId,
+      });
       if (updatedBot && this.bots.has(updatedBot.id)) {
         this.bots.set(updatedBot.id, updatedBot);
       }
-    } catch(err) {
-      this.logger.errorLog(`Error while updateBotLastUpdateId: ${JSON.stringify(err)}`);
+    } catch (err) {
+      this.logger.errorLog(
+        `Error while updateBotLastUpdateId: ${JSON.stringify(err)}`
+      );
     }
   }
 
-  private async handleCallback(update: TelegramUpdate, bot: Bot): Promise<void> {
+  private async handleCallback(
+    update: TelegramUpdate,
+    bot: Bot
+  ): Promise<void> {
     const callbackQuery = update.callback_query;
     const thumbUpMatch = callbackQuery?.data?.match(/^thumb_up_([0-9]*)$/);
     const thumbDownMatch = callbackQuery?.data?.match(/^thumb_down_([0-9]*)$/);
-    const updateJokeRatingMatch = callbackQuery?.data?.match(/^update_joke_rating_([0-9]*)$/);
+    const updateJokeRatingMatch = callbackQuery?.data?.match(
+      /^update_joke_rating_([0-9]*)$/
+    );
 
     if (callbackQuery && callbackQuery.message) {
       const userId = callbackQuery.from.id;
@@ -103,23 +142,43 @@ export class UpdatesService {
 
       if (thumbUpMatch && thumbUpMatch[1]) {
         const jokeId = Number(thumbUpMatch[1]);
-        await this.jokesService.likeJokeMessage(jokeId, userId, chatId, messageId, bot.token, callbackQuery.id);
+        await this.jokesService.likeJokeMessage(
+          jokeId,
+          userId,
+          chatId,
+          messageId,
+          bot.token,
+          callbackQuery.id
+        );
       }
 
       if (thumbDownMatch && thumbDownMatch[1]) {
         const jokeId = Number(thumbDownMatch[1]);
-        await this.jokesService.dislikeJokeMessage(jokeId, userId, chatId, messageId, bot.token, callbackQuery.id);
+        await this.jokesService.dislikeJokeMessage(
+          jokeId,
+          userId,
+          chatId,
+          messageId,
+          bot.token,
+          callbackQuery.id
+        );
       }
 
       if (updateJokeRatingMatch && updateJokeRatingMatch[1]) {
         const jokeId = Number(updateJokeRatingMatch[1]);
-        await this.jokesService.updateJokeMessage(jokeId, chatId, messageId, bot.token, callbackQuery.id);
+        await this.jokesService.updateJokeMessage(
+          jokeId,
+          chatId,
+          messageId,
+          bot.token,
+          callbackQuery.id
+        );
       }
     }
   }
 
   private async handleUpdate(update: TelegramUpdate, bot: Bot): Promise<void> {
-    const rules = this.rules.filter(rule => bot.ruleIds.includes(rule.id));
+    const rules = this.rules.filter((rule) => bot.ruleIds.includes(rule.id));
     const message = update.message;
 
     if (message && rules.length) {
@@ -131,61 +190,91 @@ export class UpdatesService {
     }
   }
 
-  private isMessageMatchRule(messageCondition: RuleCondition, message: string): boolean {
-    if (messageCondition.type === 'regex') {
+  private isMessageMatchRule(
+    messageCondition: RuleCondition,
+    message: string
+  ): boolean {
+    if (messageCondition.type === "regex") {
       return new RegExp(messageCondition.pattern).test(message);
     }
 
-    if (messageCondition.type === 'length') {
-      switch(messageCondition.operator) {
-        case '<': return message.length < messageCondition.value;
-        case '>': return message.length > messageCondition.value;
-        case '>=': return message.length >= messageCondition.value;
-        case '<=': return message.length <= messageCondition.value;
-        case '=': return message.length === messageCondition.value;
+    if (messageCondition.type === "length") {
+      switch (messageCondition.operator) {
+        case "<":
+          return message.length < messageCondition.value;
+        case ">":
+          return message.length > messageCondition.value;
+        case ">=":
+          return message.length >= messageCondition.value;
+        case "<=":
+          return message.length <= messageCondition.value;
+        case "=":
+          return message.length === messageCondition.value;
       }
     }
 
-    if (messageCondition.type === 'command') {
+    if (messageCondition.type === "command") {
       return message.match(/^\/[a-zA-Z]*/)?.[0] === messageCondition.name;
     }
 
     return false;
   }
 
-  private async sendMessageResponse(response: RuleResponse, message: TelegramMessage, botToken: string): Promise<void> {
+  private async sendMessageResponse(
+    response: RuleResponse,
+    message: TelegramMessage,
+    botToken: string
+  ): Promise<void> {
     const chatId = Number(message.chat.id);
-    console.log(response.type);
-    if (response.type === 'message') {
+    if (response.type === "message") {
       const messageId = response.reply ? message.message_id : undefined;
-      await this.messageResponseService.sendTextMessage(botToken, chatId, response.text, messageId);
+      await this.messageResponseService.sendTextMessage(
+        botToken,
+        chatId,
+        response.text,
+        messageId
+      );
     }
 
-    if (response.type === 'sticker') {
+    if (response.type === "sticker") {
       const messageId = response.reply ? message.message_id : undefined;
-      await this.messageResponseService.sendStickerMessage(botToken, chatId, response.stickerId, messageId);
+      await this.messageResponseService.sendStickerMessage(
+        botToken,
+        chatId,
+        response.stickerId,
+        messageId
+      );
     }
 
-    if (response.type === 'emoji') {
+    if (response.type === "emoji") {
       const messageId = message.message_id;
-      await this.messageResponseService.setEmojiReaction(botToken, chatId, messageId, response.emoji);
+      await this.messageResponseService.setEmojiReaction(
+        botToken,
+        chatId,
+        messageId,
+        response.emoji
+      );
     }
 
-    if (response.type === 'random_joke') {
+    if (response.type === "random_joke") {
       await this.messageResponseService.sendRandomJoke(botToken, chatId);
     }
 
-    if (response.type === 'find_joke') {
-      await this.messageResponseService.sendFindedJoke(botToken, chatId, message.text);
+    if (response.type === "find_joke") {
+      await this.messageResponseService.sendFindedJoke(
+        botToken,
+        chatId,
+        message.text
+      );
     }
 
-    if (response.type === 'joke_rating') {
+    if (response.type === "joke_rating") {
       await this.messageResponseService.sendJokesRating(botToken, chatId);
     }
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 
