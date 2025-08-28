@@ -35,7 +35,7 @@ export const Sidenav: React.FC = () => {
         <Link to="/logs">
           <NavButton
             onClick={() => setActiveNav(NavLink.logs)}
-            text="Logs"
+            text="Action logs"
             icon={
               <DocumentTextIcon className="size-6 text-white"></DocumentTextIcon>
             }

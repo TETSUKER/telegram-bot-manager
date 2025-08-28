@@ -2,7 +2,8 @@ import { configureStore } from "@reduxjs/toolkit";
 import chatReducer from "./chat";
 import rulesReducer from "./rules";
 import jokesReducer from "./jokes";
-import botReducer from './bots';
+import botReducer from "./bots";
+import actionLogsReducer from "./action-logs";
 
 export const store = configureStore({
   reducer: {
@@ -10,5 +11,6 @@ export const store = configureStore({
     rule: rulesReducer,
     joke: jokesReducer,
     bot: botReducer,
+    actionLogs: actionLogsReducer,
   },
 });
