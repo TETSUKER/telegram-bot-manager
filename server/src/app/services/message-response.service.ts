@@ -1,23 +1,39 @@
 import { diContainer } from 'app/core/di-container';
 import { TelegramService } from './telegram.service';
 import { JokesService } from './jokes.service';
+import { EventBus } from 'app/core/event-bus';
+import { EventName } from 'app/interfaces/event-bus.interfaces';
 
 export class MessageResponseService {
   constructor(
     private telegramService: TelegramService,
     private jokesService: JokesService,
+    private eventBus: EventBus,
   ) {}
 
   public async sendTextMessage(token: string, chatId: number, text: string, message_id?: number): Promise<void> {
     await this.telegramService.sendTextMessage(token, chatId, text, message_id);
+    this.eventBus.publish(EventName.message_send, {
+      chatId,
+      message: text,
+    });
   }
 
   public async sendStickerMessage(token: string, chatId: number, stickerId: string, message_id?: number): Promise<void> {
     await this.telegramService.sendSticker(token, chatId, stickerId, message_id);
+    this.eventBus.publish(EventName.sticker_send, {
+      chatId,
+      stickerId,
+    });
   }
 
-  public async setEmojiReaction(token: string, chatId: number, message_id: number, emoji: string): Promise<void> {
-    await this.telegramService.setMessageReaction(token, chatId, message_id, emoji);
+  public async setEmojiReaction(token: string, chatId: number, messageId: number, emoji: string): Promise<void> {
+    await this.telegramService.setMessageReaction(token, chatId, messageId, emoji);
+    this.eventBus.publish(EventName.emoji_reaction_send, {
+      chatId,
+      messageId,
+      emoji,
+    });
   }
 
   public async sendRandomJoke(token: string, chatId: number): Promise<void> {
@@ -30,7 +46,12 @@ export class MessageResponseService {
     if (findJokeCommandMatch && findJokeCommandMatch[1]) {
       await this.jokesService.findJokeAndSend(token, chatId, findJokeCommandMatch[1]);
     } else {
-      await this.telegramService.sendTextMessage(token, chatId, 'Write joke text after command.');
+      const message = 'Write joke text after command.';
+      await this.telegramService.sendTextMessage(token, chatId, message);
+      this.eventBus.publish(EventName.message_send, {
+        chatId,
+        message,
+      });
     }
   }
 
@@ -42,4 +63,5 @@ export class MessageResponseService {
 diContainer.registerDependencies(MessageResponseService, [
   TelegramService,
   JokesService,
+  EventBus,
 ]);

@@ -3,6 +3,7 @@ import { BotsRoutes } from './bots.routes';
 import { RulesRoutes } from './rules.routes';
 import { ChatsRoutes } from './chats.routes';
 import { JokesRoutes } from './jokes.routes';
+import { ActionLogRoutes } from './action-log.routes';
 
 export class Routes {
   constructor(
@@ -10,6 +11,7 @@ export class Routes {
     private rulesRoutes: RulesRoutes,
     private chatsRoutes: ChatsRoutes,
     private jokesRoutes: JokesRoutes,
+    private actionLogRoutes: ActionLogRoutes,
   ) {}
 
   public registerRoutes(): void {
@@ -17,6 +19,7 @@ export class Routes {
     this.rulesRoutes.registerRoutes();
     this.chatsRoutes.registerRoutes();
     this.jokesRoutes.registerRoutes();
+    this.actionLogRoutes.registerRoutes();
   }
 }
 
@@ -25,4 +28,5 @@ diContainer.registerDependencies(Routes, [
   RulesRoutes,
   ChatsRoutes,
   JokesRoutes,
+  ActionLogRoutes,
 ]);

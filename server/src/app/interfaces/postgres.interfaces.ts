@@ -34,6 +34,11 @@ export type Condition<T> = {
   columnName: T extends T ? keyof T : never;
 } & ConditionType;
 
+export interface Sort<T> {
+  sort: 'asc' | 'desc';
+  columnName: keyof T;
+}
+
 export interface Column<T> {
   columnName: keyof T;
   type: 'serial' | 'varchar' | 'boolean' | 'timestamp' | 'text' | 'json' | 'int' | 'bigint';

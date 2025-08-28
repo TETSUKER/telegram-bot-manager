@@ -38,7 +38,7 @@ export class TelegramService {
     };
 
     try {
-      return await this.telegramHttpsApi.callApi('sendMessage', botToken, body);
+      return await this.telegramHttpsApi.callApi<TelegramMessage>('sendMessage', botToken, body);
     } catch(err) {
       throw new ServerApiError(`Error then sending text meessage: ${JSON.stringify(err)}`);
     }
@@ -50,7 +50,7 @@ export class TelegramService {
       sticker: stickerId,
       reply_to_message_id
     };
-    return await this.telegramHttpsApi.callApi('sendSticker', botToken, body);
+    return await this.telegramHttpsApi.callApi<TelegramMessage>('sendSticker', botToken, body);
   }
 
   public async setMessageReaction(botToken: string, chatId: number, messageId: number, emoji: string): Promise<TelegramMessage> {
@@ -59,7 +59,7 @@ export class TelegramService {
       message_id: messageId,
       reaction: [{ type: 'emoji', emoji }]
     };
-    return await this.telegramHttpsApi.callApi('setMessageReaction', botToken, body);
+    return await this.telegramHttpsApi.callApi<TelegramMessage>('setMessageReaction', botToken, body);
   }
 
   public async getUpdates(botToken: string, offset: number = 0, timeout: number = 30): Promise<TelegramUpdate[]> {

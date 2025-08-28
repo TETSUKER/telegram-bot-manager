@@ -83,6 +83,7 @@ export class ScheduleMessagesService {
     ) {
       const scheduleRule = this.getScheduleRule(rule);
       const job = schedule.scheduleJob(scheduleRule, async () => {
+        this.logger.infoLog(`Job with id: ${jobId} TRIGGERED. Rule: ${JSON.stringify(rule)}`);
         if (rule.condition.type === "schedule") {
           const chats = await this.chatsService.getChats({
             ids: rule.condition.scheduleChatIds,

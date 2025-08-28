@@ -55,6 +55,9 @@ export class BotsService {
     const removedBotsIds = removedBots.map(bot => bot.id);
 
     this.publishDeletedRulesFromBots(removedBots);
+    for (const id of removedBotsIds) {
+      this.eventBus.publish(EventName.bot_removed, id);
+    }
 
     return removedBotsIds;
   }
@@ -71,6 +74,7 @@ export class BotsService {
 
     if (oldBot && newBot) {
       this.publishChangedBotRules(oldBot, newBot);
+      this.eventBus.publish(EventName.bot_updated, newBot);
     }
 
     return newBot;

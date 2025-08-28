@@ -2,7 +2,7 @@ import { diContainer } from './di-container';
 import { Dotenv } from './dotenv';
 import { Logger } from './logger';
 import { Client, QueryResultRow, QueryResult } from 'pg';
-import { Column, Condition, LogicalOperator, TableName } from 'app/interfaces/postgres.interfaces';
+import { Column, Condition, LogicalOperator, Sort, TableName } from 'app/interfaces/postgres.interfaces';
 
 export class Postgres {
   private client = this.getClient();
@@ -15,7 +15,7 @@ export class Postgres {
     this.closeConnectToDbOnSigterm();
   }
 
-  public async selectFromTable<T, R extends QueryResultRow = any>(tableName: TableName, columns?: (keyof T)[], conditions?: Condition<T>[], logicOperator?: LogicalOperator): Promise<R[]> {
+  public async selectFromTable<T, R extends QueryResultRow = any>(tableName: TableName, columns?: (keyof T)[], conditions?: Condition<T>[], logicOperator?: LogicalOperator, sort?: Sort<T>): Promise<R[]> {
     const select = columns?.length ? columns.join(',') : '*';
     const queryConditions = conditions?.length ? `where ${conditions.map(condition => {
       if (condition.type === 'string') {
@@ -34,7 +34,8 @@ export class Postgres {
         return `${condition?.exclude ? 'not' : ''} ${String(condition.columnName)} && array[${condition.values.map(key => typeof key === 'number' ? key :`'${key}'`).join(',')}]`;
       }
     }).join(` ${logicOperator ? logicOperator : 'or'} `)}` : '';
-    const query = `select ${select} from ${tableName} ${queryConditions}`;
+    const sortQuery = sort ? `order by ${sort.columnName.toString()} ${sort.sort}` : '';
+    const query = `select ${select} from ${tableName} ${queryConditions} ${sortQuery}`;
 
     try {
       this.logger.infoLog(`Select from ${tableName} query: ${query}`);

@@ -15,7 +15,13 @@ export class ChatsService {
   }
 
   public async addChat(newChat: NewChatApi): Promise<Chat | null> {
-    return await this.chatModel.addChat(newChat);
+    const addedChat = await this.chatModel.addChat(newChat);
+
+    if (addedChat) {
+      this.eventBus.publish(EventName.chat_added, addedChat);
+    }
+
+    return addedChat;
   }
 
   public async removeChat(chatIds: number[]): Promise<number[]> {
@@ -27,7 +33,13 @@ export class ChatsService {
   }
 
   public async updateChat(chat: UpdateChatApi): Promise<Chat | null> {
-    return await this.chatModel.updateChat(chat);
+    const updatedChat = await this.chatModel.updateChat(chat);
+
+    if (updatedChat) {
+      this.eventBus.publish(EventName.chat_updated, updatedChat);
+    }
+
+    return updatedChat;
   }
 }
 

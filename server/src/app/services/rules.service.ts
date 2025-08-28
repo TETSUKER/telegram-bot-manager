@@ -31,7 +31,13 @@ export class RulesService {
   }
 
   public async addRule(newMessageRule: NewRule): Promise<Rule | null> {
-    return await this.rulesModel.addRule(newMessageRule);
+    const createdRule = await this.rulesModel.addRule(newMessageRule);
+
+    if (createdRule) {
+      this.eventBus.publish(EventName.rule_added, createdRule);
+    }
+
+    return createdRule;
   }
 
   public async removeRules(ids: number[]): Promise<number[]> {
@@ -64,6 +70,7 @@ export class RulesService {
     if (updatedRule) {
       const bots = await this.botsService.getBots({ ruleIds: [updateRule.id] });
       this.publishUpdatedRuleInBots(bots, updatedRule);
+      this.eventBus.publish(EventName.rule_updated, updatedRule);
     }
 
     return updatedRule;
