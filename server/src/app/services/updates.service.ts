@@ -35,6 +35,7 @@ export class UpdatesService {
     this.cacheRules();
     this.eventBus.subscribe(EventName.bot_added, (bot) => {
       this.bots.set(bot.id, bot);
+      this.pollBotUpdates(bot.id);
     });
     this.eventBus.subscribe(EventName.bot_updated, (bot) => {
       this.bots.set(bot.id, bot);
