@@ -24,14 +24,19 @@ export class Http {
 
   private getServer(): Server {
     return createServer((req: IncomingMessage, res: ServerResponse) => {
-      this.setCors(res);
+      this.setCors(req, res);
       this.handleRequest(req as Request, res);
     });
   }
 
-  private setCors(response: ServerResponse): void {
+  private setCors(request: IncomingMessage, response: ServerResponse): void {
     const host = this.dotenv.environments.HOST;
-    response.setHeader('Access-Control-Allow-Origin', `http://${host}:3000`);
+    const allowedOrigins = [`http://${host}`, `http://${host}:3000`];
+    const origin = request.headers.origin;
+
+    if (origin && allowedOrigins.includes(origin)) {
+      response.setHeader('Access-Control-Allow-Origin', origin);
+    }
     response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   }
@@ -115,9 +120,9 @@ export class Http {
     await dispatch();
   }
 
-  public listen(port: number, hostname: string, callback: () => void): void {
+  public listen(callback: () => void): void {
     this.logger.infoLog('Starting server...');
-    this.httpServer.listen(port, hostname, () => {
+    this.httpServer.listen(3020, () => {
       callback();
       const addr = this.httpServer.address() as AddressInfo;
       this.logger.successfulLog(`Server running at http://${addr.address}:${addr.port}`);

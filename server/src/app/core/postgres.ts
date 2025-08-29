@@ -146,7 +146,7 @@ export class Postgres {
   }
 
   private getClient(): Client {
-    const host = this.dotenv.environments.HOST;
+    const host = this.dotenv.environments.PG_HOST;
     const db_port = Number(this.dotenv.environments.PG_PORT);
     const database = this.dotenv.environments.PG_DATABASE;
     const db_user = this.dotenv.environments.PG_USERNAME;

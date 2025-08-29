@@ -2,5 +2,5 @@
   "watch": ["src"],
   "ext": ".ts",
   "ignore": [],
-  "exec": "rm -rf dist/* && tsc && NODE_PATH=./dist node --env-file=.env dist/index.js"
+  "exec": "rm -rf dist/* && tsc && NODE_PATH=./dist node --env-file=../.env dist/index.js"
 }

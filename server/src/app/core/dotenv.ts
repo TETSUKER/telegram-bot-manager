@@ -2,7 +2,7 @@ import { diContainer } from './di-container';
 
 interface EnvironmentConfig {
   HOST: string;
-  PORT: string;
+  PG_HOST: string;
   PG_PORT: string;
   PG_DATABASE: string;
   PG_USERNAME: string;
@@ -13,11 +13,11 @@ type EnvironmentKey = keyof EnvironmentConfig;
 
 export class Dotenv {
   public environments: EnvironmentConfig = {
-    HOST: '',
-    PORT: '',
-    PG_PORT: '',
-    PG_DATABASE: '',
-    PG_USERNAME: '',
+    HOST: '0.0.0.0',
+    PG_HOST: 'db',
+    PG_PORT: '5432',
+    PG_DATABASE: 'telegram_bot_manager',
+    PG_USERNAME: 'postgres',
     PG_PASSWORD: '',
   };
 
@@ -25,11 +25,9 @@ export class Dotenv {
     const envKeys = Object.keys(this.environments) as EnvironmentKey[];
 
     for (const env of envKeys) {
-      if (!process.env[env]) {
-        throw new Error(`Environment with name: ${env} not declared in dotenv file. Envs which require to start: ${envKeys}`);
+      if (process.env[env]) {
+        this.environments[env] = process.env[env];
       }
-
-      this.environments[env] = process.env[env];
     }
   }
 }

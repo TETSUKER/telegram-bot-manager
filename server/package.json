@@ -4,7 +4,7 @@
   "description": "System for managing telegram bots.",
   "main": "src/index.ts",
   "scripts": {
-    "start": "npm run build && NODE_PATH=./dist node dist/app.js",
+    "start": "npm run build && NODE_PATH=./dist node --env-file=../.env dist/index.js",
     "build": "tsc",
     "dev": "nodemon"
   },
