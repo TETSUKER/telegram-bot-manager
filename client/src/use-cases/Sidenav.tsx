@@ -31,9 +31,9 @@ export const Sidenav: React.FC = () => {
 
   return (
     <div className="h-full w-80 flex flex-col items-start border-r border-slate-800">
-      <div className="w-full flex gap-x-[10px] px-[20px] py-[10px] items-center border-b border-slate-700">
+      <div className="w-full flex gap-x-[5px] px-[10px] py-[10px] items-center border-b border-slate-700">
         <PaperAirplaneIcon className="size-6 text-blue-500" />
-        <span className="text-white text-xl font-medium">Telegram Manager</span>
+        <span className="text-white text-xl font-medium whitespace-nowrap">Telegram Bot Manager</span>
       </div>
 
       <div className="w-full flex flex-col px-[10px] py-[20px] gap-y-[5px]">
