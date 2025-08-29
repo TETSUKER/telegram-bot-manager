@@ -1,0 +1,31 @@
+version: "0.1"
+services:
+  tbm-client:
+    container_name: tbm-client
+    build:
+      context: ./client
+    ports:
+      - "80:3000"
+
+  tbm-server:
+    container_name: tbm-server
+    build:
+      context: ./server
+    ports:
+      - "3020:3020"
+    environment:
+      HOST: ${HOST:-0.0.0.0}
+      PG_HOST: ${PG_HOST:-db}
+      PG_PORT: ${PG_PORT:-5432}
+      PG_USERNAME: ${PG_USERNAME:-postgres}
+      PG_PASSWORD: ${PG_PASSWORD:-mypassword}
+      PG_DATABASE: ${PG_DATABASE:-telegram_bot_manager}
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${PG_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-111}
+      POSTGRES_DB: ${PG_DATABASE:-telegram_bot_manager}
+    ports:
+      - "${PG_PORT:-5432}:${PG_PORT:-5432}"
