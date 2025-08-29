@@ -21,7 +21,12 @@ export const Sidenav: React.FC = () => {
 
   React.useEffect(() => {
     const urlLink = window.location.pathname.slice(1) as NavLink;
-    setActiveNav(NavLink[urlLink] ?? null);
+
+    if (urlLink) {
+      setActiveNav(NavLink[urlLink]);
+    } else {
+      setActiveNav(Object.keys(NavLink)[0] as NavLink);
+    }
   }, []);
 
   return (
