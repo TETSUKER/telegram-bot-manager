@@ -2,7 +2,7 @@
 
 TBM is a system where you can create various rules for your telegram bots.
 
-![Screenshot](assets/screenshot.png?raw=true "Screenshot")
+![Screenshot](assets/rules.png?raw=true "Screenshot")
 
 ## Getting Started
 ### Prerequisites
