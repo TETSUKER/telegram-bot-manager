@@ -26,7 +26,7 @@ services:
     image: postgres:17
     environment:
       POSTGRES_USER: ${PG_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${PG_PASSWORD:-111}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-mypassword}
       POSTGRES_DB: ${PG_DATABASE:-telegram_bot_manager}
     ports:
       - "${PG_PORT:-5432}:${PG_PORT:-5432}"
