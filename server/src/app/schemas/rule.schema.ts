@@ -80,8 +80,8 @@ export const RuleSchema = NewRuleSchema.extend({
 export const FilterRuleSchema = z.object({
   ids: z.array(z.number()).optional(),
   names: z.array(z.string()).optional(),
-  conditionType: z.array(z.enum(['regex', 'length', 'command'])).optional(),
-  responseType: z.array(z.enum(['message', 'sticker', 'emoji', 'joke'])).optional(),
+  conditionTypes: z.array(z.enum(['regex', 'length', 'command'])).optional(),
+  responseTypes: z.array(z.enum(['message', 'sticker', 'emoji', 'joke'])).optional(),
   scheduleChatIds: z.array(z.number()).optional(),
 }) satisfies ZodType<FilterRuleApi>;
 
