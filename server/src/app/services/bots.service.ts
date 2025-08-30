@@ -74,7 +74,6 @@ export class BotsService {
 
     if (oldBot && newBot) {
       this.publishChangedBotRules(oldBot, newBot);
-      this.eventBus.publish(EventName.bot_updated, newBot);
     }
 
     return newBot;

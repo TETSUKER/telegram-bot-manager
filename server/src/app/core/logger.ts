@@ -1,3 +1,4 @@
+import { ApiError } from 'app/errors/api.error';
 import { diContainer } from './di-container';
 
 export class Logger {
@@ -9,8 +10,16 @@ export class Logger {
     console.info(`ℹ️  ${new Date().toLocaleString()} | ${message}`);
   }
 
-  public errorLog(message: string): void {
-    console.error(`🚨 ${new Date().toLocaleString()} | ${message}`);
+  public errorLog(message: string, error?: ApiError): void {
+    if (error) {
+      console.error(`🚨 ${new Date().toLocaleString()} | ${message} ${JSON.stringify({
+        statusCode: error.statusCode,
+        message: error.message,
+        timestamp: error.timestamp,
+      })}`); 
+    } else {
+      console.error(`🚨 ${new Date().toLocaleString()} | ${message}`);
+    }
   }
 
   public warningLog(message: string): void {

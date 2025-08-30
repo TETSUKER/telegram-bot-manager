@@ -8,7 +8,6 @@ export type EventHandler<Key extends EventName> = (data: EventData[Key]) => void
 export enum EventName {
   bot_added = 'bot_added',
   bot_removed = 'bot_removed',
-  bot_updated = 'bot_updated',
   rule_added = 'rule_added',
   rules_removed = 'rules_removed',
   rule_updated = 'rule_updated',
@@ -32,7 +31,6 @@ export enum EventName {
 export interface EventData {
   [EventName.bot_added]: Bot,
   [EventName.bot_removed]: number,
-  [EventName.bot_updated]: Bot,
   [EventName.rule_added]: Rule,
   [EventName.rules_removed]: number[],
   [EventName.rule_updated]: Rule,

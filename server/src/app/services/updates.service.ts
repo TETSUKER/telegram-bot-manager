@@ -17,6 +17,7 @@ import { RulesService } from "./rules.service";
 import { BotsService } from "./bots.service";
 import { JokesService } from "./jokes.service";
 import { MessageResponseService } from "./message-response.service";
+import { ApiError } from 'app/errors/api.error';
 
 export class UpdatesService {
   private bots = new Map<number, Bot>();
@@ -36,9 +37,6 @@ export class UpdatesService {
     this.eventBus.subscribe(EventName.bot_added, (bot) => {
       this.bots.set(bot.id, bot);
       this.pollBotUpdates(bot.id);
-    });
-    this.eventBus.subscribe(EventName.bot_updated, (bot) => {
-      this.bots.set(bot.id, bot);
     });
     this.eventBus.subscribe(EventName.bot_removed, (id) => {
       this.bots.delete(id);
@@ -98,9 +96,9 @@ export class UpdatesService {
         }
         bot = this.bots.get(botId);
       } catch (err) {
-        this.logger.errorLog(
-          `${this.pollBotUpdates.name} error: ${JSON.stringify(err)}`
-        );
+        if (err instanceof ApiError) {
+          this.logger.errorLog(`${this.pollBotUpdates.name} error:`, err);
+        }
         await this.delay(5000);
       }
     }

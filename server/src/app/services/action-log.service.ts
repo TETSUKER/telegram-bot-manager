@@ -27,13 +27,6 @@ export class ActionLogService {
         date: new Date(),
       });
     });
-    this.eventBus.subscribe(EventName.bot_updated, async (bot) => {
-      await this.addActionLog({
-        type: "BOT_UPDATED",
-        details: `Bot with id: ${bot.id} updated`,
-        date: new Date(),
-      });
-    });
 
     this.eventBus.subscribe(EventName.chat_added, async (chat) => {
       await this.addActionLog({
