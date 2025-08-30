@@ -19,7 +19,7 @@ export class Postgres {
     const select = columns?.length ? columns.join(',') : '*';
     const queryConditions = conditions?.length ? `where ${conditions.map(condition => {
       if (condition.type === 'string') {
-        return `"${String(condition.columnName)}" ${condition.exactMatch ? '=' : 'like'} '${condition.value}'`;
+        return `"${String(condition.columnName)}" ${condition.exactMatch ? `= '${condition.value}'` : `like '%${condition.value}%'`}`;
       }
       if (condition.type === 'json') {
         return `${String(condition.columnName)}::jsonb @> '[${condition.value}]'`;

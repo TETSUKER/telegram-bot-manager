@@ -81,7 +81,7 @@ export class JokesModel {
   private convertFromDbJoke(dbJokes: DbJoke[]): Joke[] {
     return dbJokes.map(dbJoke => ({
       id: dbJoke.id,
-      text: dbJoke.text,
+      text: dbJoke.text.replace(/\\n/g, '\n'),
       sendedChatIds: dbJoke.sended_chat_ids ?? [],
     }));
   }
