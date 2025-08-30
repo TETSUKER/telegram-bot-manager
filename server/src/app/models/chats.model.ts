@@ -74,7 +74,12 @@ export class ChatsModel {
   }
 
   public async addChat(newChat: NewChatApi): Promise<Chat | null> {
-    const [dbChat] = await this.getChats({ names: [newChat.name] });
+    const [dbChat] = await this.postgres.selectFromTable<DbChat, DbChat>('chats', [], [{
+      columnName: 'name',
+      value: newChat.name,
+      type: 'string',
+      exactMatch: true,
+    }]);
 
     if (dbChat) {
       throw new ConflictError(`Chat with same name already exist`);
