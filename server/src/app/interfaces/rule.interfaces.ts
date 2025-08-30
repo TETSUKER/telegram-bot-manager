@@ -4,6 +4,7 @@ export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'frida
 export type Schedule =
   | { type: 'weekly', dayOfWeek: DayOfWeek, hour: number, minute: number }
   | { type: 'annually', day: number, month: number, hour: number, minute: number }
+  | { type: 'daily', hour: number, minute: number }
 
 export type RuleCondition =
   | { type: 'regex', pattern: string }
@@ -75,7 +76,15 @@ interface AnnuallyScheduleDb {
   schedule_chat_ids: number[];
 }
 
-export type ScheduleConditionDbRule = WeeklyScheduleDb | AnnuallyScheduleDb;
+interface DailyScheduleDb {
+  condition_type: 'schedule';
+  schedule_type: 'daily';
+  schedule_hour: number;
+  schedule_minute: number;
+  schedule_chat_ids: number[];
+}
+
+export type ScheduleConditionDbRule = WeeklyScheduleDb | AnnuallyScheduleDb | DailyScheduleDb;
 
 export type ConditionDbRule = RegexConditionDbRule | LengthConditionDbRule | CommandConditionDbRule | ScheduleConditionDbRule;
 

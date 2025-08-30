@@ -163,6 +163,14 @@ export class ScheduleMessagesService {
       scheduleRule.minute = rule.condition.schedule.minute;
     }
 
+    if (
+      rule.condition.type === "schedule" &&
+      rule.condition.schedule.type === "daily"
+    ) {
+      scheduleRule.hour = rule.condition.schedule.hour;
+      scheduleRule.minute = rule.condition.schedule.minute;
+    }
+
     return scheduleRule;
   }
 

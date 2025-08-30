@@ -38,6 +38,15 @@ const MessageConditionSchema: ZodType<RuleCondition> = z.union([
     }),
     scheduleChatIds: z.array(z.number()),
   }),
+  z.object({
+    type: z.literal('schedule'),
+    schedule: z.object({
+      type: z.literal('daily'),
+      hour: z.number(),
+      minute: z.number(),
+    }),
+    scheduleChatIds: z.array(z.number()),
+  }),
 ]);
 
 const MessageResponseSchema: ZodType<RuleResponse> = z.union([

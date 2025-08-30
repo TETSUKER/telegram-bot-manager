@@ -134,6 +134,7 @@ export class RulesModel {
     const conditions = this.getConditionsFromFilter(filter);
     try {
       const rules = await this.postgres.selectFromTable<DbRule, DbRule>('rules', [], conditions);
+
       return this.convertFromDbRules(rules);
     } catch {
       throw new ServerApiError('Error get rules');
@@ -186,6 +187,18 @@ export class RulesModel {
               type: 'annually',
               month: dbRule.schedule_month,
               day: dbRule.schedule_day,
+              hour: dbRule.schedule_hour,
+              minute: dbRule.schedule_minute,
+            },
+            scheduleChatIds: dbRule.schedule_chat_ids,
+          };
+        }
+
+        if (dbRule.schedule_type === 'daily') {
+          return {
+            type: 'schedule',
+            schedule: {
+              type: 'daily',
               hour: dbRule.schedule_hour,
               minute: dbRule.schedule_minute,
             },
@@ -413,6 +426,15 @@ export class RulesModel {
             schedule_type: 'annually',
             schedule_month: newRule.condition.schedule.month,
             schedule_day: newRule.condition.schedule.day,
+            schedule_hour: newRule.condition.schedule.hour,
+            schedule_minute: newRule.condition.schedule.minute,
+            schedule_chat_ids: newRule.condition.scheduleChatIds,
+          };
+        }
+        if (newRule.condition.schedule.type === 'daily') {
+          return {
+            condition_type: 'schedule',
+            schedule_type: 'daily',
             schedule_hour: newRule.condition.schedule.hour,
             schedule_minute: newRule.condition.schedule.minute,
             schedule_chat_ids: newRule.condition.scheduleChatIds,
