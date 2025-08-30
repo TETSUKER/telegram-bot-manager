@@ -79,6 +79,18 @@ function getServerRuleFromState(state: CreateRuleModalSliceState): NewRule {
           },
         };
       }
+
+      if (state.scheduleType.value === ScheduleType.daily) {
+        return {
+          type: RuleConditionType.schedule,
+          scheduleChatIds: state.scheduleChats.value,
+          schedule: {
+            type: ScheduleType.daily,
+            hour: Number(state.scheduleTime.value.split(":")[0]),
+            minute: Number(state.scheduleTime.value.split(":")[1]),
+          },
+        };
+      }
     }
 
     if (state.conditionType.value === RuleConditionType.regex) {
@@ -438,6 +450,13 @@ function updateVisibleState(state: CreateRuleModalSliceState): void {
     if (state.scheduleType.value === ScheduleType.annually) {
       state.scheduleMonth.visible = true;
       state.scheduleDay.visible = true;
+      state.scheduleDayOfWeek.visible = false;
+      state.scheduleTime.visible = true;
+    }
+
+    if (state.scheduleType.value === ScheduleType.daily) {
+      state.scheduleMonth.visible = false;
+      state.scheduleDay.visible = false;
       state.scheduleDayOfWeek.visible = false;
       state.scheduleTime.visible = true;
     }

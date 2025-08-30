@@ -37,6 +37,7 @@ export enum Month {
 export enum ScheduleType {
   weekly = "weekly",
   annually = "annually",
+  daily = "daily",
 }
 export enum RuleConditionType {
   regex = "regex",
@@ -66,7 +67,12 @@ export type Schedule =
       month: number;
       hour: number;
       minute: number;
-    };
+    }
+  | {
+    type: ScheduleType.daily;
+    hour: number;
+    minute: number;
+  };
 
 export type RuleCondition =
   | { type: RuleConditionType.regex; pattern: string }
