@@ -294,24 +294,29 @@ export class JokesService {
     const query =
       "select joke_id, sum(case when is_like then 1 else -1 end) as rating from jokes_likes group by joke_id order by rating desc";
     const { rows } = await this.postgres.customQuery<JokeIdWithRatingDb>(query);
-    const ratingMessage = (
-      await Promise.all(
-        rows.map(async (row, index) => {
-          const [joke] = await this.getJokes({ ids: [row.joke_id] });
 
-          if (joke) {
-            return `${index + 1}. ${joke.text.substring(0, 40)}... (${
-              row.rating
-            })`;
-          }
-          return `${index + 1}. Текст шутки не найден... (${row.rating})`;
-        })
-      )
-    ).join("\n");
-    await this.telegramService.sendTextMessage(botToken, chatId, ratingMessage);
-    this.eventBus.publish(EventName.joke_rating_send, {
-      chatId,
-    });
+    if (rows.length) {
+      const ratingMessage = (
+        await Promise.all(
+          rows.map(async (row, index) => {
+            const [joke] = await this.getJokes({ ids: [row.joke_id] });
+  
+            if (joke) {
+              return `${index + 1}. ${joke.text.substring(0, 40)}... (${
+                row.rating
+              })`;
+            }
+            return `${index + 1}. Текст шутки не найден... (${row.rating})`;
+          })
+        )
+      ).join("\n");
+      await this.telegramService.sendTextMessage(botToken, chatId, ratingMessage);
+      this.eventBus.publish(EventName.joke_rating_send, {
+        chatId,
+      });
+    } else {
+      await this.telegramService.sendTextMessage(botToken, chatId, 'No jokes in db :(');
+    }
   }
 }
 
