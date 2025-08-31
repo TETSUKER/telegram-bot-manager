@@ -302,7 +302,7 @@ export class JokesService {
             const [joke] = await this.getJokes({ ids: [row.joke_id] });
   
             if (joke) {
-              return `${index + 1}. ${joke.text.substring(0, 40)}... (${
+              return `${index + 1}. ${joke.text.replace(/\n/g, '').substring(0, 40)}... (${
                 row.rating
               })`;
             }
