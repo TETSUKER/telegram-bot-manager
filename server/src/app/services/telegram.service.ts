@@ -50,7 +50,12 @@ export class TelegramService {
       sticker: stickerId,
       reply_to_message_id
     };
-    return await this.telegramHttpsApi.callApi<TelegramMessage>('sendSticker', botToken, body);
+
+    try {
+      return await this.telegramHttpsApi.callApi<TelegramMessage>('sendSticker', botToken, body);
+    } catch(err) {
+      throw new ServerApiError(`Error then sending sticker: ${JSON.stringify(err)}`);
+    }
   }
 
   public async setMessageReaction(botToken: string, chatId: number, messageId: number, emoji: string): Promise<TelegramMessage> {

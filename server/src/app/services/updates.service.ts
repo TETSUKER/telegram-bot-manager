@@ -69,38 +69,37 @@ export class UpdatesService {
     let bot = this.bots.get(botId);
 
     while (bot) {
-      try {
-        const updates = await this.telegramService.getUpdates(
-          bot.token,
-          bot.lastUpdateId + 1
-        );
+      const updates = await this.telegramService.getUpdates(
+        bot.token,
+        bot.lastUpdateId
+      );
 
-        if (Array.isArray(updates) && updates.length > 0) {
-          for (const update of updates) {
-            this.logger.infoLog(
-              `Bot: ${bot.username} recieve update: ${JSON.stringify(update)}`
-            );
-            try {
-              if (
-                update.callback_query &&
-                update.callback_query.from.is_bot === false
-              ) {
-                await this.handleCallback(update, bot);
-              } else {
-                await this.handleUpdate(update, bot);
-              }
-            } finally {
-              await this.updateBotLastUpdateId(bot.id, update.update_id);
+      if (Array.isArray(updates) && updates.length > 0) {
+        for (const update of updates) {
+          this.logger.infoLog(
+            `Bot: ${bot.username} recieve update: ${JSON.stringify(update)}`
+          );
+          try {
+            if (
+              update.callback_query &&
+              update.callback_query.from.is_bot === false
+            ) {
+              await this.handleCallback(update, bot);
+            } else {
+              await this.handleUpdate(update, bot);
             }
+            
+          } catch(err) {
+            if (err instanceof ApiError) {
+              this.logger.errorLog(`${this.pollBotUpdates.name} error:`, err);
+            }
+            await this.delay(5000);
+          } finally {
+            await this.updateBotLastUpdateId(bot.id, update.update_id + 1);
           }
         }
-        bot = this.bots.get(botId);
-      } catch (err) {
-        if (err instanceof ApiError) {
-          this.logger.errorLog(`${this.pollBotUpdates.name} error:`, err);
-        }
-        await this.delay(5000);
       }
+      bot = this.bots.get(botId);
     }
   }
 
