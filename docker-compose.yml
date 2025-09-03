@@ -34,3 +34,4 @@ services:
       POSTGRES_DB: ${PG_DATABASE:-telegram_bot_manager}
     ports:
       - "${PG_PORT:-5432}:${PG_PORT:-5432}"
+    command: -p ${PG_PORT:-5432}
