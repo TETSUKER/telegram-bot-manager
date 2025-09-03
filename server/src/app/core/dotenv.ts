@@ -1,7 +1,7 @@
 import { diContainer } from './di-container';
 
 interface EnvironmentConfig {
-  HOST: string;
+  ALLOWED_HOST: string;
   PG_HOST: string;
   PG_PORT: string;
   PG_DATABASE: string;
@@ -13,7 +13,7 @@ type EnvironmentKey = keyof EnvironmentConfig;
 
 export class Dotenv {
   public environments: EnvironmentConfig = {
-    HOST: '0.0.0.0',
+    ALLOWED_HOST: '0.0.0.0',
     PG_HOST: 'db',
     PG_PORT: '5432',
     PG_DATABASE: 'telegram_bot_manager',

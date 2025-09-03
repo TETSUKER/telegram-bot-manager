@@ -30,8 +30,8 @@ export class Http {
   }
 
   private setCors(request: IncomingMessage, response: ServerResponse): void {
-    const host = this.dotenv.environments.HOST;
-    const allowedOrigins = [`http://${host}`, `http://${host}:3000`];
+    const allowed_host = this.dotenv.environments.ALLOWED_HOST;
+    const allowedOrigins = [`http://${allowed_host}`, `http://${allowed_host}:3000`];
     const origin = request.headers.origin;
 
     if (origin && allowedOrigins.includes(origin)) {
