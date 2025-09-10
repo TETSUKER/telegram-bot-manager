@@ -141,7 +141,7 @@ export class ChatsModel {
     return {
       chat_id: newChat.chatId,
       name: newChat.name,
-      date_added: new Date(),
+      date_added: new Date().toLocaleString(),
     };
   }
 

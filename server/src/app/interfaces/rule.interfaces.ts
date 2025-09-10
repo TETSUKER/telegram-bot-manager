@@ -112,7 +112,7 @@ interface JokeResponseDbRule {
 export type ResponseDbRule = MessageResponseDbRule | StickerResponseDbRule | EmojiResponseDbRule | JokeResponseDbRule;
 
 export interface BaseDbRule {
-  date_added: Date;
+  date_added: string;
   name: string;
   probability: number | null;
 }

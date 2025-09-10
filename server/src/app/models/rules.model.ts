@@ -123,7 +123,7 @@ export class RulesModel {
   private convertToDbRule(newRule: NewRule): NewDbRule {
     return {
       name: newRule.name,
-      date_added: new Date(),
+      date_added: new Date().toLocaleString(),
       probability: newRule.probability ?? null,
       ...this.getDbCondition(newRule),
       ...this.getDbResponse(newRule),

@@ -21,7 +21,7 @@ export type ActionLogType =
 export interface NewDbActionLog {
   type: ActionLogType;
   details: string;
-  date: Date;
+  date: string;
 }
 
 export interface DbActionLog extends NewDbActionLog {

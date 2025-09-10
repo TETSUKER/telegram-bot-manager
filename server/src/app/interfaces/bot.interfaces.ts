@@ -2,7 +2,7 @@ export interface NewDbBot {
   token: string;
   username: string;
   rule_ids: number[];
-  date_added: Date;
+  date_added: string;
   first_name: string;
   can_join_groups: boolean;
   can_read_all_group_messages: boolean;
@@ -27,7 +27,7 @@ export interface Bot {
   token: string;
   username: string;
   ruleIds: number[];
-  dateAdded: Date;
+  dateAdded: string;
   firstName: string;
   canJoinGroups: boolean;
   canReadAllGroupMessages: boolean;

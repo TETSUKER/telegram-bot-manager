@@ -1,7 +1,7 @@
 export interface NewDbChat {
   chat_id: string;
   name: string;
-  date_added: Date;
+  date_added: string;
 }
 
 export interface DbChat extends NewDbChat {
@@ -19,7 +19,7 @@ export interface Chat {
   id: number;
   chatId: string;
   name: string;
-  dateAdded: Date;
+  dateAdded: string;
 }
 
 export interface FilterChatApi {

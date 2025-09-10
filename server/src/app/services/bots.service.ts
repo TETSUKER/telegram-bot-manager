@@ -30,7 +30,7 @@ export class BotsService {
       token,
       username: botInfo.username || '',
       rule_ids: [],
-      date_added: new Date(),
+      date_added: new Date().toLocaleString(),
       first_name: botInfo.first_name || '',
       can_join_groups: botInfo.can_join_groups || false,
       can_read_all_group_messages: botInfo.can_read_all_group_messages || false,
