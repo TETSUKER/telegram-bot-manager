@@ -6,8 +6,8 @@ import {
   RuleResponse,
 } from "app/interfaces/rule.interfaces";
 import {
+  TelegramCallbackQuery,
   TelegramMessage,
-  TelegramUpdate,
 } from "app/interfaces/telegram-api.interfaces";
 import { Bot } from "app/interfaces/bot.interfaces";
 import { Logger } from "app/core/logger";
@@ -83,14 +83,16 @@ export class UpdatesService {
             );
             try {
               if (
+                update &&
                 update.callback_query &&
                 update.callback_query.from.is_bot === false
               ) {
-                await this.handleCallback(update, bot);
+                await this.handleCallback(update.callback_query, bot);
+              } else if (update && update.message) {
+                await this.handleUpdate(update.message, bot);
               } else {
-                await this.handleUpdate(update, bot);
+                throw new Error(`Can't handle update: ${JSON.stringify(update)}`);
               }
-              
             } catch(err) {
               if (err instanceof ApiError) {
                 this.logger.errorLog(`${this.pollBotUpdates.name} error:`, err);
@@ -134,13 +136,12 @@ export class UpdatesService {
   }
 
   private async handleCallback(
-    update: TelegramUpdate,
+    callbackQuery: TelegramCallbackQuery,
     bot: Bot
   ): Promise<void> {
-    const callbackQuery = update.callback_query;
-    const thumbUpMatch = callbackQuery?.data?.match(/^thumb_up_([0-9]*)$/);
-    const thumbDownMatch = callbackQuery?.data?.match(/^thumb_down_([0-9]*)$/);
-    const updateJokeRatingMatch = callbackQuery?.data?.match(
+    const thumbUpMatch = callbackQuery.data?.match(/^thumb_up_([0-9]*)$/);
+    const thumbDownMatch = callbackQuery.data?.match(/^thumb_down_([0-9]*)$/);
+    const updateJokeRatingMatch = callbackQuery.data?.match(
       /^update_joke_rating_([0-9]*)$/
     );
 
@@ -179,16 +180,15 @@ export class UpdatesService {
           callbackQuery.id
         );
       } else {
-        this.logger.errorLog(`Not a single match with callback query data: ${JSON.stringify(callbackQuery)}`);
+        throw new Error(`Not a single match with callback query data: ${JSON.stringify(callbackQuery)}`);
       }
     } else {
-      this.logger.errorLog(`Callback query message is empty: ${JSON.stringify(callbackQuery)}`);
+      throw new Error(`Callback query message is empty: ${JSON.stringify(callbackQuery)}`);
     }
   }
 
-  private async handleUpdate(update: TelegramUpdate, bot: Bot): Promise<void> {
+  private async handleUpdate(message: TelegramMessage, bot: Bot): Promise<void> {
     const rules = this.rules.filter((rule) => bot.ruleIds.includes(rule.id));
-    const message = update.message;
 
     if (message && rules.length) {
       for (const rule of rules) {
