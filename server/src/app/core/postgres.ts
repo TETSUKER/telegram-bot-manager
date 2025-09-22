@@ -166,7 +166,7 @@ export class Postgres {
       await this.client.connect();
       this.logger.successfulLog('PostgreSQL connected');
     } catch(err) {
-      throw new Error(`❌ Error connect to PostgreSQL: ${err}`);
+      this.logger.errorLog(`Error connect to PostgreSQL: ${err}`);
     }
   }
 

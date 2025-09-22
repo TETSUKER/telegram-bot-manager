@@ -54,7 +54,9 @@ export class ScheduleMessagesService {
         }
       }
     );
-    this.initScheduleMessages();
+    this.initScheduleMessages().catch(() => {
+      this.logger.errorLog(`Error when init schedule messages`);
+    });
   }
 
   private async initScheduleMessages(): Promise<void> {

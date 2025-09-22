@@ -159,9 +159,7 @@ export class UpdatesService {
           bot.token,
           callbackQuery.id
         );
-      }
-
-      if (thumbDownMatch && thumbDownMatch[1]) {
+      } else if (thumbDownMatch && thumbDownMatch[1]) {
         const jokeId = Number(thumbDownMatch[1]);
         await this.jokesService.dislikeJokeMessage(
           jokeId,
@@ -171,9 +169,7 @@ export class UpdatesService {
           bot.token,
           callbackQuery.id
         );
-      }
-
-      if (updateJokeRatingMatch && updateJokeRatingMatch[1]) {
+      } else if (updateJokeRatingMatch && updateJokeRatingMatch[1]) {
         const jokeId = Number(updateJokeRatingMatch[1]);
         await this.jokesService.updateJokeMessage(
           jokeId,
@@ -182,7 +178,11 @@ export class UpdatesService {
           bot.token,
           callbackQuery.id
         );
+      } else {
+        this.logger.errorLog(`Not a single match with callback query data: ${JSON.stringify(callbackQuery)}`);
       }
+    } else {
+      this.logger.errorLog(`Callback query message is empty: ${JSON.stringify(callbackQuery)}`);
     }
   }
 

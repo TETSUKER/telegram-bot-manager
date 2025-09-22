@@ -122,6 +122,14 @@ export class Http {
 
   public listen(callback: () => void): void {
     this.logger.infoLog('Starting server...');
+    this.httpServer.on('error', (err) => {
+      const error = err as any;
+      if (error && error.code === 'EADDRINUSE') {
+        this.logger.errorLog('Error when start http server: "Port is already in use"');
+      } else {
+        this.logger.errorLog(`Unknown error when start http server`);
+      }
+  });
     this.httpServer.listen(3020, () => {
       callback();
       const addr = this.httpServer.address() as AddressInfo;
