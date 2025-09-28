@@ -38,7 +38,7 @@ export class TelegramHttpsApi {
   private handleApiResponse<T>(
     res: IncomingMessage,
     resolve: (value: T) => void,
-    reject: (reason: string) => void,
+    reject: (reason: Error | string) => void,
   ): void {
     let data = '';
     res.on('data', (chunk) => (data += chunk));
@@ -58,12 +58,10 @@ export class TelegramHttpsApi {
     res.on('error', (err) => this.handleErrorRespone(err, reject));
   }
 
-  private handleErrorRespone(err: unknown, reject: (reason: string) => void): void {
+  private handleErrorRespone(err: unknown, reject: (reason: Error | string) => void): void {
     if (err instanceof Error) {
-      console.error('Telegram API error:', err);
-      reject(`Telegram API error: ${err.message}`);
+      reject(err);
     } else {
-      console.error('Telegram API unknown error:', err);
       reject(`Telegram API unknown error: ${err}`);
     }
   }

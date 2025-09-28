@@ -8,6 +8,7 @@ import {
 import {
   TelegramCallbackQuery,
   TelegramMessage,
+  TelegramUpdate,
 } from "app/interfaces/telegram-api.interfaces";
 import { Bot } from "app/interfaces/bot.interfaces";
 import { Logger } from "app/core/logger";
@@ -17,7 +18,6 @@ import { RulesService } from "./rules.service";
 import { BotsService } from "./bots.service";
 import { JokesService } from "./jokes.service";
 import { MessageResponseService } from "./message-response.service";
-import { ApiError } from 'app/errors/api.error';
 
 export class UpdatesService {
   private bots = new Map<number, Bot>();
@@ -69,50 +69,52 @@ export class UpdatesService {
   private async pollBotUpdates(botId: number): Promise<void> {
     let bot = this.bots.get(botId);
 
-    try {
-      while (bot) {
-        const updates = await this.telegramService.getUpdates(
+    while (bot) {
+      let updates: TelegramUpdate[] = [];
+      try {
+        updates = await this.telegramService.getUpdates(
           bot.token,
           bot.lastUpdateId
         );
+      } catch(err) {
+        if (err instanceof Error) {
+          this.logger.errorLog(`Error while get updates:`, err);
+        } else {
+          this.logger.errorLog(`Unknown error while get updates: ${JSON.stringify(err)}`);
+        }
+        await this.delay(5000);
+      }
 
-        if (Array.isArray(updates) && updates.length > 0) {
-          for (const update of updates) {
-            this.logger.infoLog(
-              `Bot: ${bot.username} recieve update: ${JSON.stringify(update)}`
-            );
-            try {
-              if (
-                update &&
-                update.callback_query &&
-                update.callback_query.from.is_bot === false
-              ) {
-                await this.handleCallback(update.callback_query, bot);
-              } else if (update && update.message) {
-                await this.handleUpdate(update.message, bot);
-              } else {
-                throw new Error(`Can't handle update: ${JSON.stringify(update)}`);
-              }
-            } catch(err) {
-              if (err instanceof ApiError) {
-                this.logger.errorLog(`${this.pollBotUpdates.name} error:`, err);
-              } else {
-                this.logger.errorLog(`${this.pollBotUpdates.name} error: ${JSON.stringify(err)}`);
-              }
-              await this.delay(5000);
-            } finally {
-              await this.updateBotLastUpdateId(bot.id, update.update_id + 1);
+      if (Array.isArray(updates) && updates.length > 0) {
+        for (const update of updates) {
+          this.logger.infoLog(
+            `Bot: ${bot.username} recieve update: ${JSON.stringify(update)}`
+          );
+          try {
+            if (
+              update &&
+              update.callback_query &&
+              update.callback_query.from.is_bot === false
+            ) {
+              await this.handleCallback(update.callback_query, bot);
+            } else if (update && update.message) {
+              await this.handleUpdate(update.message, bot);
+            } else {
+              throw new Error(`Can't handle update: ${JSON.stringify(update)}`);
             }
+          } catch(err) {
+            if (err instanceof Error) {
+              this.logger.errorLog(`Error while handle update:`, err);
+            } else {
+              this.logger.errorLog(`Unknown error while handle update: ${JSON.stringify(err)}`);
+            }
+            await this.delay(5000);
+          } finally {
+            await this.updateBotLastUpdateId(bot.id, update.update_id + 1);
           }
         }
-        bot = this.bots.get(botId);
       }
-    } catch (err) {
-      if (err instanceof ApiError) {
-        this.logger.errorLog(`${this.pollBotUpdates.name} error poll updates for bot: `, err);
-      } else {
-        this.logger.errorLog(`${this.pollBotUpdates.name} unknown error poll updates for bot: ${JSON.stringify(err)}`);
-      }
+      bot = this.bots.get(botId);
     }
   }
 

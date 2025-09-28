@@ -9,8 +9,6 @@ import { JokesLikesModel } from "app/models/jokes-likes.model";
 import { JokesModel } from "app/models/jokes.model";
 import { TelegramService } from "./telegram.service";
 import { getRandomNumber } from "app/utils/getRandomNumber";
-import { Logger } from "app/core/logger";
-import { ApiError } from "app/errors/api.error";
 import { Postgres } from "app/core/postgres";
 import { JokeIdWithRatingDb } from "app/interfaces/jokes-likes.interfaces";
 import { EventBus } from "app/core/event-bus";
@@ -21,7 +19,6 @@ export class JokesService {
     private telegramService: TelegramService,
     private jokesLikesModel: JokesLikesModel,
     private jokesModel: JokesModel,
-    private logger: Logger,
     private postgres: Postgres,
     private eventBus: EventBus
   ) {}
@@ -248,11 +245,8 @@ export class JokesService {
           joke.text,
           markup
         );
-      }
-    } catch (err) {
-      const methodName = this.updateJokeMessage.name;
-      if (err instanceof ApiError) {
-        this.logger.errorLog(`Error while ${methodName}: ${err.message}`);
+      } else {
+        throw new Error(`Joke with id: ${jokeId} not found`);
       }
     } finally {
       if (callbackQueryId) {
@@ -324,7 +318,6 @@ diContainer.registerDependencies(JokesService, [
   TelegramService,
   JokesLikesModel,
   JokesModel,
-  Logger,
   Postgres,
   EventBus,
 ]);

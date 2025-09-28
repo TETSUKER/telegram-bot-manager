@@ -97,8 +97,6 @@ export class TelegramService {
     try {
       return await this.telegramHttpsApi.callApi('editMessageText', botToken, body);
     } catch(err) {
-      const methodName = this.editMessageText.name;
-      this.logger.errorLog(`Error while ${methodName}: ${JSON.stringify(err)}`);
       throw new ServerApiError(`Error then edit message text: ${JSON.stringify(err)}`);
     }
   }
