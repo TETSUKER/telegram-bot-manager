@@ -100,7 +100,7 @@ export class UpdatesService {
             } else if (update && update.message) {
               await this.handleUpdate(update.message, bot);
             } else {
-              throw new Error(`Can't handle update: ${JSON.stringify(update)}`);
+              this.logger.warningLog('Update with unknown type');
             }
           } catch(err) {
             if (err instanceof Error) {
@@ -195,93 +195,121 @@ export class UpdatesService {
     if (message && rules.length) {
       for (const rule of rules) {
         if (message && this.isMessageMatchRule(rule.condition, message.text)) {
-          await this.sendMessageResponse(rule.response, message, bot.token);
+          await this.sendMessageResponse(rule.condition, rule.response, message, bot.token, bot.username);
         }
       }
     }
   }
 
   private isMessageMatchRule(
-    messageCondition: RuleCondition,
+    ruleCondition: RuleCondition,
     message: string
   ): boolean {
-    if (messageCondition.type === "regex") {
-      return new RegExp(messageCondition.pattern).test(message);
+    if (ruleCondition.type === "regex") {
+      return new RegExp(ruleCondition.pattern).test(message);
     }
 
-    if (messageCondition.type === "length") {
-      switch (messageCondition.operator) {
+    if (ruleCondition.type === "length") {
+      switch (ruleCondition.operator) {
         case "<":
-          return message.length < messageCondition.value;
+          return message.length < ruleCondition.value;
         case ">":
-          return message.length > messageCondition.value;
+          return message.length > ruleCondition.value;
         case ">=":
-          return message.length >= messageCondition.value;
+          return message.length >= ruleCondition.value;
         case "<=":
-          return message.length <= messageCondition.value;
+          return message.length <= ruleCondition.value;
         case "=":
-          return message.length === messageCondition.value;
+          return message.length === ruleCondition.value;
       }
     }
 
-    if (messageCondition.type === "command") {
-      return message.match(/^\/[a-zA-Z]*/)?.[0] === messageCondition.name;
+    if (ruleCondition.type === "command") {
+      const startCommandMatch = this.parseStartCommand(message);
+      if (startCommandMatch && startCommandMatch.command) {
+        return startCommandMatch.command === ruleCondition.name.slice(1);
+      }
+      return message.match(/^\/[a-zA-Z]*/)?.[0] === ruleCondition.name;
     }
 
     return false;
   }
 
   private async sendMessageResponse(
-    response: RuleResponse,
+    ruleCondition: RuleCondition,
+    ruleResponse: RuleResponse,
     message: TelegramMessage,
-    botToken: string
+    botToken: string,
+    botUserName: string, 
   ): Promise<void> {
     const chatId = Number(message.chat.id);
-    if (response.type === "message") {
-      const messageId = response.reply ? message.message_id : undefined;
+    if (ruleResponse.type === "message") {
+      const messageId = ruleResponse.reply ? message.message_id : undefined;
       await this.messageResponseService.sendTextMessage(
         botToken,
         chatId,
-        response.text,
+        ruleResponse.text,
         messageId
       );
-    }
-
-    if (response.type === "sticker") {
-      const messageId = response.reply ? message.message_id : undefined;
+    } else if (ruleResponse.type === "sticker") {
+      const messageId = ruleResponse.reply ? message.message_id : undefined;
       await this.messageResponseService.sendStickerMessage(
         botToken,
         chatId,
-        response.stickerId,
+        ruleResponse.stickerId,
         messageId
       );
-    }
-
-    if (response.type === "emoji") {
+    } else if (ruleResponse.type === "emoji") {
       const messageId = message.message_id;
       await this.messageResponseService.setEmojiReaction(
         botToken,
         chatId,
         messageId,
-        response.emoji
+        ruleResponse.emoji
       );
-    }
-
-    if (response.type === "random_joke") {
+    } else if (ruleResponse.type === "random_joke") {
       await this.messageResponseService.sendRandomJoke(botToken, chatId);
-    }
-
-    if (response.type === "find_joke") {
+    } else if (ruleResponse.type === "find_joke") {
       await this.messageResponseService.sendFindedJoke(
         botToken,
         chatId,
         message.text
       );
-    }
+    } else if (ruleResponse.type === "joke_rating") {
+      await this.messageResponseService.sendJokesRating(botToken, botUserName, chatId);
+    } else if (ruleResponse.type === "get_joke_by_id" && ruleCondition.type === "command") {
+      const startCommandMatch = this.parseStartCommand(message.text);
+      const command = ruleCondition.name;
+      const commandRegExp = new RegExp(`^${command} (.*)$`);
+      const getJokeByIdCommandMatch = message.text.match(commandRegExp);
 
-    if (response.type === "joke_rating") {
-      await this.messageResponseService.sendJokesRating(botToken, chatId);
+      if (getJokeByIdCommandMatch && getJokeByIdCommandMatch[1]) {
+        const jokeId = Number(getJokeByIdCommandMatch[1]);
+        const joke = await this.jokesService.findJokeById(jokeId);
+        await this.jokesService.sendJoke(botToken, chatId, joke);
+      }
+      if (startCommandMatch && startCommandMatch.argument) {
+        const jokeId = Number(startCommandMatch.argument);
+        const joke = await this.jokesService.findJokeById(jokeId);
+        await this.jokesService.sendJoke(botToken, chatId, joke);
+      }
+    } else {
+      throw new Error(`Not a single match with rule response type: ${ruleResponse.type}`);
     }
+  }
+
+  private parseStartCommand(message: string): ({
+    command: string;
+    argument: string | undefined;
+  } | null) {
+    const startCommandRegExp = message.match(new RegExp('^/start (?<command>[a-zA-Z]*)_(?<argument>[0-9]*)$'));
+    if (startCommandRegExp && startCommandRegExp.groups && startCommandRegExp.groups['command']) {
+      return {
+        command: startCommandRegExp.groups['command'], 
+        argument: startCommandRegExp.groups['argument'],
+      };
+    }
+    return null;
   }
 
   private delay(ms: number): Promise<void> {

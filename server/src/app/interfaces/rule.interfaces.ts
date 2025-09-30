@@ -16,7 +16,7 @@ export type RuleResponse =
   | { type: 'message', text: string, reply: boolean }
   | { type: 'sticker', stickerId: string, reply: boolean }
   | { type: 'emoji', emoji: string }
-  | { type: 'random_joke' | 'find_joke' | 'joke_rating' }
+  | { type: 'random_joke' | 'find_joke' | 'joke_rating' | 'get_joke_by_id' }
 
 export interface NewRule {
   name: string;
@@ -106,7 +106,7 @@ interface EmojiResponseDbRule {
 }
 
 interface JokeResponseDbRule {
-  response_type: 'random_joke' | 'find_joke' | 'joke_rating';
+  response_type: 'random_joke' | 'find_joke' | 'joke_rating' | 'get_joke_by_id';
 }
 
 export type ResponseDbRule = MessageResponseDbRule | StickerResponseDbRule | EmojiResponseDbRule | JokeResponseDbRule;

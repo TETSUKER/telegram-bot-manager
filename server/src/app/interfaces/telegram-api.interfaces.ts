@@ -179,6 +179,7 @@ export interface SendTextMessageRequestBody {
   chat_id: number;
   text: string;
   reply_to_message_id?: number;
+  parse_mode?: 'Markdown';
 }
 
 export interface ReplyMarkup {

@@ -247,6 +247,12 @@ export class RulesModel {
       };
     }
 
+    if (dbRule.response_type === 'get_joke_by_id') {
+      return {
+        type: 'get_joke_by_id',
+      };
+    }
+
     return {
       type: 'joke_rating',
     };

@@ -84,7 +84,7 @@ export class JokesService {
     }
   }
 
-  private async sendJoke(
+  public async sendJoke(
     botToken: string,
     chatId: number,
     joke: Joke
@@ -283,6 +283,7 @@ export class JokesService {
 
   public async sendJokesRating(
     botToken: string,
+    botUserName: string,
     chatId: number
   ): Promise<void> {
     const query =
@@ -296,7 +297,7 @@ export class JokesService {
             const [joke] = await this.getJokes({ ids: [row.joke_id] });
   
             if (joke) {
-              return `${index + 1}. ${joke.text.replace(/\n/g, '').substring(0, 40)}... (${
+              return `${index + 1}. [${joke.text.replace(/\n/g, '').substring(0, 40)}...](https://t.me/${botUserName}?start=getJokeById ${joke.id}) (${
                 row.rating
               })`;
             }
@@ -304,12 +305,22 @@ export class JokesService {
           })
         )
       ).join("\n");
-      await this.telegramService.sendTextMessage(botToken, chatId, ratingMessage);
+      await this.telegramService.sendTextMarkdownMessage(botToken, chatId, ratingMessage);
       this.eventBus.publish(EventName.joke_rating_send, {
         chatId,
       });
     } else {
       await this.telegramService.sendTextMessage(botToken, chatId, 'No jokes in db :(');
+    }
+  }
+
+  public async findJokeById(jokeId: number): Promise<Joke> {
+    const [joke] = await this.jokesModel.getJokes({ ids: [jokeId] });
+
+    if (joke) {
+      return joke;
+    } else {
+      throw new Error(`Joke with id: ${jokeId} not found`);
     }
   }
 }

@@ -44,6 +44,21 @@ export class TelegramService {
     }
   }
 
+  public async sendTextMarkdownMessage(botToken: string, chatId: number, text: string, reply_to_message_id?: number): Promise<TelegramMessage> {
+    const body: SendTextMessageRequestBody = {
+      chat_id: chatId,
+      text,
+      reply_to_message_id,
+      parse_mode: 'Markdown',
+    };
+
+    try {
+      return await this.telegramHttpsApi.callApi<TelegramMessage>('sendMessage', botToken, body);
+    } catch(err) {
+      throw new ServerApiError(`Error then sending markdown meessage: ${JSON.stringify(err)}`);
+    }
+  }
+
   public async sendSticker(botToken: string, chatId: number, stickerId: string, reply_to_message_id?: number): Promise<TelegramMessage> {
     const body: SendStickerRequestBody = {
       chat_id: chatId,

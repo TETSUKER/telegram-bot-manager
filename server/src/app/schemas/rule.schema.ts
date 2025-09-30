@@ -73,6 +73,9 @@ const MessageResponseSchema: ZodType<RuleResponse> = z.union([
   z.object({
     type: z.literal('joke_rating'),
   }),
+  z.object({
+    type: z.literal('get_joke_by_id'),
+  }),
 ]);
 
 export const NewRuleSchema = z.object({
