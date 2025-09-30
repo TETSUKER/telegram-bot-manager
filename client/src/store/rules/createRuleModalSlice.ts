@@ -156,6 +156,12 @@ function getServerRuleFromState(state: CreateRuleModalSliceState): NewRule {
       };
     }
 
+    if (state.responseType.value === RuleResponseType.get_joke_by_id) {
+      return {
+        type: RuleResponseType.get_joke_by_id,
+      };
+    }
+
     return {
       type: RuleResponseType.random_joke,
     };
@@ -483,7 +489,8 @@ function updateVisibleState(state: CreateRuleModalSliceState): void {
   if (
     state.responseType.value === RuleResponseType.random_joke ||
     state.responseType.value === RuleResponseType.find_joke ||
-    state.responseType.value === RuleResponseType.joke_rating
+    state.responseType.value === RuleResponseType.joke_rating ||
+    state.responseType.value === RuleResponseType.get_joke_by_id
   ) {
     state.text.visible = false;
     state.stickerId.visible = false;
@@ -494,6 +501,7 @@ function updateVisibleState(state: CreateRuleModalSliceState): void {
     state.responseType.value === RuleResponseType.random_joke ||
     state.responseType.value === RuleResponseType.find_joke ||
     state.responseType.value === RuleResponseType.joke_rating ||
+    state.responseType.value === RuleResponseType.get_joke_by_id ||
     state.responseType.value === RuleResponseType.emoji
   ) {
     state.reply.visible = false;

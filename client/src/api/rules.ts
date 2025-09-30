@@ -52,6 +52,7 @@ export enum RuleResponseType {
   random_joke = "random_joke",
   find_joke = "find_joke",
   joke_rating = "joke_rating",
+  get_joke_by_id = "get_joke_by_id",
 }
 
 export type Schedule =
@@ -96,7 +97,8 @@ export type RuleResponse =
       type:
         | RuleResponseType.random_joke
         | RuleResponseType.find_joke
-        | RuleResponseType.joke_rating;
+        | RuleResponseType.joke_rating
+        | RuleResponseType.get_joke_by_id;
     };
 
 export interface NewRule {
