@@ -55,8 +55,8 @@ export class MessageResponseService {
     }
   }
 
-  public async sendJokesRating(botToken: string, botUserName: string, chatId: number): Promise<void> {
-    await this.jokesService.sendJokesRating(botToken, botUserName, chatId);
+  public async sendJokesRating(botToken: string, botUserName: string, chatId: number, command: string): Promise<void> {
+    await this.jokesService.sendJokesRating(botToken, botUserName, chatId, command);
   }
 }
 

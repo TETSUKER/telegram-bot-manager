@@ -284,7 +284,8 @@ export class JokesService {
   public async sendJokesRating(
     botToken: string,
     botUserName: string,
-    chatId: number
+    chatId: number,
+    command: string,
   ): Promise<void> {
     const query =
       "select joke_id, sum(case when is_like then 1 else -1 end) as rating from jokes_likes group by joke_id order by rating desc";
@@ -297,7 +298,7 @@ export class JokesService {
             const [joke] = await this.getJokes({ ids: [row.joke_id] });
   
             if (joke) {
-              return `${index + 1}. [${joke.text.replace(/\n/g, '').substring(0, 40)}...](https://t.me/${botUserName}?start=getJokeById ${joke.id}) (${
+              return `${index + 1}. [${joke.text.replace(/\n/g, '').substring(0, 40)}...](https://t.me/${botUserName}?start=${command}_${joke.id}) (${
                 row.rating
               })`;
             }

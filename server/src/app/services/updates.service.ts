@@ -275,8 +275,16 @@ export class UpdatesService {
         chatId,
         message.text
       );
-    } else if (ruleResponse.type === "joke_rating") {
-      await this.messageResponseService.sendJokesRating(botToken, botUserName, chatId);
+    } else if (ruleResponse.type === "joke_rating" && ruleCondition.type === "command") {
+      const getJokeByIdRule = this.rules.find(rule => rule.response.type === 'get_joke_by_id');
+
+      if (getJokeByIdRule && getJokeByIdRule.condition.type === 'command') {
+        const command = getJokeByIdRule.condition.name.slice(1);
+        await this.messageResponseService.sendJokesRating(botToken, botUserName, chatId, command);
+      } else {
+        throw new Error('No get joke by id rule');
+      }
+      
     } else if (ruleResponse.type === "get_joke_by_id" && ruleCondition.type === "command") {
       const startCommandMatch = this.parseStartCommand(message.text);
       const command = ruleCondition.name;
